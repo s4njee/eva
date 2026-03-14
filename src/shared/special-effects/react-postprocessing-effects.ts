@@ -58,6 +58,22 @@ const barrelBlurFragment = /* glsl */ `
   }
 `;
 
+const scanlineFragment = /* glsl */ `
+  uniform float time;
+  uniform float density;
+  uniform float opacity;
+  uniform float scrollSpeed;
+
+  void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+    vec4 color = texture2D(inputBuffer, uv);
+    float wave = sin((uv.y + time * scrollSpeed) * density * 300.0) * 0.5 + 0.5;
+    float lineMask = smoothstep(0.15, 0.85, wave);
+    float shading = mix(0.45, 1.0, lineMask);
+    color.rgb *= mix(1.0, shading, opacity);
+    outputColor = vec4(color.rgb, inputColor.a);
+  }
+`;
+
 const databendFragment = /* glsl */ `
   uniform float time;
   uniform float intensity;
@@ -129,6 +145,39 @@ const databendFragment = /* glsl */ `
     tvMix = mix(tvMix, tvMix * staticLayer, staticAmount);
 
     outputColor = vec4(tvMix, inputColor.a);
+  }
+`;
+
+const glitchBurstFragment = /* glsl */ `
+  uniform float time;
+  uniform float amount;
+  uniform float seed;
+  uniform float columns;
+
+  float rand(vec2 co) {
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+  }
+
+  void mainImage(const in vec4 inputColor, const in vec2 vUv, out vec4 outputColor) {
+    vec2 uv = vUv;
+    float blockY = floor(uv.y * (10.0 + seed * 20.0)) / 10.0;
+    float noise = rand(vec2(blockY, seed + time));
+    float glitchLine = step(1.0 - amount * 0.3, noise);
+    uv.x += glitchLine * (rand(vec2(blockY, time)) - 0.5) * amount * 0.15;
+
+    float shift = amount * 0.015 * (rand(vec2(time, seed)) - 0.5);
+    vec4 cr = texture2D(inputBuffer, clamp(vec2(uv.x + shift, uv.y), 0.0, 1.0));
+    vec4 cg = texture2D(inputBuffer, uv);
+    vec4 cb = texture2D(inputBuffer, clamp(vec2(uv.x - shift, uv.y), 0.0, 1.0));
+    vec4 color = vec4(cr.r, cg.g, cb.b, cg.a);
+
+    float columnMask = step(0.001, columns);
+    float columnsNoise = columnMask * step(0.5, fract(floor(vUv.x / max(columns, 0.001)) * 0.5));
+    color.rgb = mix(color.rgb, color.rgb * 0.92, columnsNoise * amount * 0.08);
+
+    float flicker = rand(vec2(time * 100.0, uv.y * 50.0));
+    color.rgb *= 1.0 - amount * 0.08 * step(0.97, flicker);
+    outputColor = color;
   }
 `;
 
@@ -301,6 +350,52 @@ export class SharedBarrelBlurEffect extends Effect {
   }
 }
 
+export class SharedScanlineEffect extends Effect {
+  private readonly densityUniform: Uniform<number>;
+  private readonly opacityUniform: Uniform<number>;
+  private readonly scrollSpeedUniform: Uniform<number>;
+  private readonly timeUniform: Uniform<number>;
+
+  constructor() {
+    const densityUniform = new Uniform(4);
+    const opacityUniform = new Uniform(1);
+    const scrollSpeedUniform = new Uniform(0.08);
+    const timeUniform = new Uniform(0);
+
+    super('SharedScanlineEffect', scanlineFragment, {
+      attributes: EffectAttribute.CONVOLUTION,
+      blendFunction: BlendFunction.NORMAL,
+      uniforms: new Map<string, Uniform<any>>([
+        ['density', densityUniform],
+        ['opacity', opacityUniform],
+        ['scrollSpeed', scrollSpeedUniform],
+        ['time', timeUniform],
+      ]),
+    });
+
+    this.densityUniform = densityUniform;
+    this.opacityUniform = opacityUniform;
+    this.scrollSpeedUniform = scrollSpeedUniform;
+    this.timeUniform = timeUniform;
+  }
+
+  setDensity(value: number) {
+    this.densityUniform.value = value;
+  }
+
+  setOpacity(value: number) {
+    this.opacityUniform.value = value;
+  }
+
+  setScrollSpeed(value: number) {
+    this.scrollSpeedUniform.value = value;
+  }
+
+  update(_renderer: WebGLRenderer, _inputBuffer: WebGLRenderTarget, deltaTime?: number) {
+    this.timeUniform.value += deltaTime ?? 0;
+  }
+}
+
 export class SharedDatabendEffect extends Effect {
   private readonly timeUniform: Uniform<number>;
 
@@ -327,6 +422,75 @@ export class SharedDatabendEffect extends Effect {
   }
 }
 
+export class SharedGlitchBurstEffect extends Effect {
+  private readonly amountUniform: Uniform<number>;
+  private readonly seedUniform: Uniform<number>;
+  private readonly timeUniform: Uniform<number>;
+  private active = false;
+  private duration = 0.4;
+  private elapsed = 0;
+  private strength = 1;
+
+  constructor() {
+    const amountUniform = new Uniform(0);
+    const seedUniform = new Uniform(0);
+    const timeUniform = new Uniform(0);
+
+    super('SharedGlitchBurstEffect', glitchBurstFragment, {
+      blendFunction: BlendFunction.NORMAL,
+      uniforms: new Map<string, Uniform<any>>([
+        ['amount', amountUniform],
+        ['columns', new Uniform(0.05)],
+        ['seed', seedUniform],
+        ['time', timeUniform],
+      ]),
+    });
+
+    this.amountUniform = amountUniform;
+    this.seedUniform = seedUniform;
+    this.timeUniform = timeUniform;
+  }
+
+  setDuration(value: number) {
+    this.duration = Math.max(value, 0.01);
+  }
+
+  setStrength(value: number) {
+    this.strength = value;
+  }
+
+  trigger() {
+    this.active = true;
+    this.elapsed = 0;
+    this.seedUniform.value = Math.random() * 100;
+  }
+
+  update(_renderer: WebGLRenderer, _inputBuffer: WebGLRenderTarget, deltaTime?: number) {
+    const delta = deltaTime ?? 0;
+    this.timeUniform.value += delta;
+
+    if (!this.active) {
+      this.amountUniform.value = 0;
+      return;
+    }
+
+    this.elapsed += delta;
+    const progress = this.elapsed / this.duration;
+
+    if (progress >= 1) {
+      this.active = false;
+      this.amountUniform.value = 0;
+      return;
+    }
+
+    const burst = progress < 0.3
+      ? progress / 0.3
+      : 1 - ((progress - 0.3) / 0.7);
+
+    this.amountUniform.value = burst * this.strength;
+  }
+}
+
 export class SharedPixelMosaicEffect extends Effect {
   private readonly resolutionUniform: Uniform<Vector2>;
   private readonly timeUniform: Uniform<number>;
@@ -342,7 +506,7 @@ export class SharedPixelMosaicEffect extends Effect {
       blendFunction: BlendFunction.NORMAL,
       uniforms: new Map<string, Uniform<any>>([
         ['resolution', resolutionUniform],
-        ['pixelSize', new Uniform(4)],
+        ['pixelSize', new Uniform(7.5)],
         ['time', timeUniform],
       ]),
     });

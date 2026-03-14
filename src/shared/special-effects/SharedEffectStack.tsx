@@ -1,13 +1,11 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { ReactElement } from 'react';
 import { useFrame } from '@react-three/fiber';
 import {
   Bloom,
   ChromaticAberration,
   EffectComposer,
-  Scanline,
 } from '@react-three/postprocessing';
-import { BlendFunction } from 'postprocessing';
 import * as THREE from 'three';
 import {
   getHueCycleHue,
@@ -15,17 +13,21 @@ import {
 import {
   SharedBarrelBlurEffect,
   SharedDatabendEffect,
+  SharedGlitchBurstEffect,
   SharedHueSaturationEffect,
   SharedPixelMosaicEffect,
+  SharedScanlineEffect,
   SharedScreenXrayEffect,
   SharedThermalVisionEffect,
 } from './react-postprocessing-effects.ts';
 
-// Matrix and Atom share this declarative stack. Monolith keeps its own custom
-// composer because it needs isolated model renders for some passes.
+// All three scenes now share this declarative fullscreen effect stack. Scene-
+// specific logic like Monolith's mesh-level x-ray stays outside this component.
 export interface SharedEffectStackProps {
   barrelBlurAmount?: number;
   barrelBlurEnabled?: boolean;
+  barrelBlurOffsetX?: number;
+  barrelBlurOffsetY?: number;
   bloomEnabled?: boolean;
   bloomIntensity?: number;
   bloomRadius?: number;
@@ -34,10 +36,16 @@ export interface SharedEffectStackProps {
   chromaticAberrationEnabled?: boolean;
   chromaticModulationOffset?: number;
   chromaticOffset?: number;
+  chromaticOffsetX?: number;
+  chromaticOffsetY?: number;
   chromaticOscillationSpeed?: number;
   chromaticRadialModulation?: boolean;
   cinematicEnabled?: boolean;
   databendEnabled?: boolean;
+  glitchDuration?: number;
+  glitchEnabled?: boolean;
+  glitchStrength?: number;
+  glitchTriggerToken?: number;
   hue?: number;
   hueCycleBaseHue?: number;
   hueCycleEnabled?: boolean;
@@ -48,6 +56,7 @@ export interface SharedEffectStackProps {
   scanlineDensity?: number;
   scanlineEnabled?: boolean;
   scanlineOpacity?: number;
+  scanlineScrollSpeed?: number;
   screenXrayEnabled?: boolean;
   thermalVisionEnabled?: boolean;
 }
@@ -55,6 +64,8 @@ export interface SharedEffectStackProps {
 export default function SharedEffectStack({
   barrelBlurAmount = 0.12,
   barrelBlurEnabled = true,
+  barrelBlurOffsetX = 0,
+  barrelBlurOffsetY = 0,
   bloomEnabled = true,
   bloomIntensity = 1,
   bloomRadius = 0.5,
@@ -63,10 +74,16 @@ export default function SharedEffectStack({
   chromaticAberrationEnabled = false,
   chromaticModulationOffset = 0.15,
   chromaticOffset = 0.004,
+  chromaticOffsetX,
+  chromaticOffsetY,
   chromaticOscillationSpeed = 3.2,
   chromaticRadialModulation = true,
   cinematicEnabled = false,
   databendEnabled = false,
+  glitchDuration = 0.4,
+  glitchEnabled = false,
+  glitchStrength = 1,
+  glitchTriggerToken = 0,
   hue = 0,
   hueCycleBaseHue = 0,
   hueCycleEnabled = false,
@@ -77,20 +94,49 @@ export default function SharedEffectStack({
   scanlineDensity = 4,
   scanlineEnabled = true,
   scanlineOpacity = 1,
+  scanlineScrollSpeed = 0.08,
   screenXrayEnabled = false,
   thermalVisionEnabled = false,
 }: SharedEffectStackProps) {
-  const chromaticOffsetVector = useMemo(() => new THREE.Vector2(chromaticOffset, chromaticOffset), []);
+  const barrelBlurOffsetVector = useMemo(() => new THREE.Vector2(barrelBlurOffsetX, barrelBlurOffsetY), []);
+  const chromaticOffsetVector = useMemo(() => (
+    new THREE.Vector2(
+      chromaticOffsetX ?? chromaticOffset,
+      chromaticOffsetY ?? chromaticOffset,
+    )
+  ), []);
   const hueSatEffect = useMemo(() => new SharedHueSaturationEffect(), []);
   const barrelBlurEffect = useMemo(() => new SharedBarrelBlurEffect(), []);
   const databendEffect = useMemo(() => new SharedDatabendEffect(), []);
+  const glitchBurstEffect = useMemo(() => new SharedGlitchBurstEffect(), []);
   const pixelMosaicEffect = useMemo(() => new SharedPixelMosaicEffect(), []);
+  const scanlineEffect = useMemo(() => new SharedScanlineEffect(), []);
   const thermalVisionEffect = useMemo(() => new SharedThermalVisionEffect(), []);
   const screenXrayEffect = useMemo(() => new SharedScreenXrayEffect(), []);
+  const lastGlitchTriggerTokenRef = useRef(glitchTriggerToken);
 
   useEffect(() => {
     barrelBlurEffect.setAmount(barrelBlurAmount);
   }, [barrelBlurAmount, barrelBlurEffect]);
+
+  useEffect(() => {
+    barrelBlurOffsetVector.set(barrelBlurOffsetX, barrelBlurOffsetY);
+    barrelBlurEffect.setOffset(barrelBlurOffsetVector);
+  }, [barrelBlurEffect, barrelBlurOffsetVector, barrelBlurOffsetX, barrelBlurOffsetY]);
+
+  useEffect(() => {
+    glitchBurstEffect.setDuration(glitchDuration);
+  }, [glitchBurstEffect, glitchDuration]);
+
+  useEffect(() => {
+    glitchBurstEffect.setStrength(glitchStrength);
+  }, [glitchBurstEffect, glitchStrength]);
+
+  useEffect(() => {
+    if (!glitchEnabled || glitchTriggerToken === lastGlitchTriggerTokenRef.current) return;
+    lastGlitchTriggerTokenRef.current = glitchTriggerToken;
+    glitchBurstEffect.trigger();
+  }, [glitchBurstEffect, glitchEnabled, glitchTriggerToken]);
 
   useEffect(() => {
     if (hueCycleEnabled) return;
@@ -98,12 +144,23 @@ export default function SharedEffectStack({
     hueSatEffect.setSaturation(saturation);
   }, [hue, hueCycleEnabled, hueSatEffect, saturation]);
 
+  useEffect(() => {
+    scanlineEffect.setDensity(scanlineDensity);
+    scanlineEffect.setOpacity(scanlineOpacity);
+    scanlineEffect.setScrollSpeed(scanlineScrollSpeed);
+  }, [scanlineDensity, scanlineEffect, scanlineOpacity, scanlineScrollSpeed]);
+
   useFrame(() => {
+    const baseChromaticOffsetX = chromaticOffsetX ?? chromaticOffset;
+    const baseChromaticOffsetY = chromaticOffsetY ?? chromaticOffset;
+
     if (chromaticAberrationEnabled) {
       const now = performance.now() / 1000;
       const oscillation = 0.5 - 0.5 * Math.cos(now * chromaticOscillationSpeed);
-      const offset = chromaticOffset * oscillation;
-      chromaticOffsetVector.set(offset, offset);
+      chromaticOffsetVector.set(
+        baseChromaticOffsetX * oscillation,
+        baseChromaticOffsetY * oscillation,
+      );
     } else {
       chromaticOffsetVector.set(0, 0);
     }
@@ -132,15 +189,8 @@ export default function SharedEffectStack({
     );
   }
 
-  if (cinematicEnabled && scanlineEnabled) {
-    composerChildren.push(
-      <Scanline
-        key="scanline"
-        blendFunction={scanlineOpacity > 0 ? BlendFunction.OVERLAY : BlendFunction.SKIP}
-        density={scanlineDensity}
-        opacity={scanlineOpacity}
-      />,
-    );
+  if ((cinematicEnabled || databendEnabled) && scanlineEnabled) {
+    composerChildren.push(<primitive key="scanline" object={scanlineEffect} />);
   }
 
   if (cinematicEnabled && barrelBlurEnabled) {
@@ -158,12 +208,16 @@ export default function SharedEffectStack({
     );
   }
 
-  if (hueSatEnabled || hueCycleEnabled) {
-    composerChildren.push(<primitive key="hue" object={hueSatEffect} />);
+  if (glitchEnabled) {
+    composerChildren.push(<primitive key="glitch" object={glitchBurstEffect} />);
   }
 
   if (databendEnabled) {
     composerChildren.push(<primitive key="databend" object={databendEffect} />);
+  }
+
+  if (hueSatEnabled || hueCycleEnabled) {
+    composerChildren.push(<primitive key="hue" object={hueSatEffect} />);
   }
 
   if (pixelMosaicEnabled) {

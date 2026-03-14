@@ -1,9 +1,6 @@
 # Special Effects Architecture
 
-This repo has two effect systems:
-
-- a shared cross-scene layer used by Matrix and Atom
-- a Monolith-specific composer pipeline that reuses some shared shader factories but still owns its own render orchestration
+This repo has one shared fullscreen effect system plus a few scene-specific material hooks.
 
 If you are new to the code, start here before editing post-processing, x-ray, hotkeys, or shader-driven color treatments.
 
@@ -18,7 +15,6 @@ Shared entrypoints:
 Scene-specific entrypoints:
 
 - `visualizations/monolith/src/MonolithCanvas.jsx`
-- `visualizations/monolith/src/monolith/postprocessing.js`
 - `visualizations/matrix/src/text-rain/App.tsx`
 - `visualizations/matrix/src/text-rain/MatrixEffects.tsx`
 - `visualizations/atom/src/App.jsx`
@@ -26,7 +22,7 @@ Scene-specific entrypoints:
 
 ## Shared Effect Layer
 
-The shared layer exists so Matrix and Atom do not have to reimplement the same state machine and effect stack.
+The shared layer exists so Monolith, Matrix, and Atom do not each reimplement the same state machine and post stack.
 
 ### File map
 
@@ -38,14 +34,11 @@ The shared layer exists so Matrix and Atom do not have to reimplement the same s
   - state transitions for chromatic aberration vs x-ray
   - hue-cycle state helpers
 - `SharedEffectStack.tsx`
-  - declarative React composer used by Matrix and Atom
+  - declarative React composer used by all three scenes
   - turns booleans and numeric settings into actual post-processing passes
 - `react-postprocessing-effects.ts`
   - custom `postprocessing` `Effect` subclasses used by `SharedEffectStack`
-  - this is the right place for a new Matrix-and-Atom effect built on `@react-three/postprocessing`
-- `postprocessing-shaders.ts`
-  - shader factories for `three` `ShaderPass`
-  - currently shared with Monolith's custom composer
+  - this is the right place for a new shared fullscreen effect built on `@react-three/postprocessing`
 
 ### Shared hotkeys
 
@@ -69,40 +62,32 @@ Do not reimplement that logic ad hoc inside a scene. Reuse the helpers in `share
 
 ## Monolith
 
-Monolith keeps a custom post-processing pipeline because it needs more than a simple declarative stack.
+Monolith now uses the shared effect stack too.
 
 ### Main files
 
 - `visualizations/monolith/src/MonolithCanvas.jsx`
-  - owns hotkeys, GUI sync, runtime flags, and render-loop integration
-- `visualizations/monolith/src/monolith/postprocessing.js`
-  - builds the `EffectComposer`
-  - owns pass enablement, animated uniforms, glitch lifetime, resize handling, and isolated render targets
+  - owns hotkeys, GUI sync, runtime flags, render-loop integration, and maps Monolith settings into `SharedEffectStack`
 - `visualizations/monolith/src/monolith/gui.js`
   - mirrors the runtime effect controls in lil-gui
 - `visualizations/monolith/src/monolith/materials.js`
   - owns material mutation and the mesh-level x-ray shader work
-- `src/shared/special-effects/postprocessing-shaders.ts`
-  - shared shader factories used by Monolith's custom composer
-  - includes fullscreen passes such as crosshatch and god rays
+- `src/shared/special-effects/SharedEffectStack.tsx`
+  - handles Monolith's fullscreen effects alongside Matrix and Atom
 
-### Why Monolith is different
+### What still differs in Monolith
 
-Matrix and Atom can stack effects directly on the scene output.
+Monolith still owns a few scene-specific behaviors outside the shared stack:
 
-Monolith cannot, because some effects need extra render targets:
-
-- crosshatch needs isolated model and mask textures
-- god rays need an isolated occlusion/emissive render and screen-space light position
-- glitch is a timed burst, not a simple on/off pass
-
-That is why Monolith still owns `createPostProcessing(...)` instead of using `SharedEffectStack`.
+- mesh-level x-ray lives in `materials.js`, not as a fullscreen pass
+- bloom-ring lighting animation is driven from `MonolithCanvas.jsx`
+- model-swap glitch triggers are emitted from Monolith and consumed by the shared stack
 
 ### If you are adding a Monolith-only effect
 
-1. Decide whether it is a plain fullscreen pass or needs isolated renders.
-2. Add the shader factory in `src/shared/special-effects/postprocessing-shaders.ts` unless there is a strong reason to keep the shader definition inline.
-3. Keep Monolith-only orchestration such as isolated render targets and pass ordering inside `visualizations/monolith/src/monolith/postprocessing.js`.
+1. Decide whether it is really Monolith-only or should become shared.
+2. If it is a fullscreen effect, add it in `src/shared/special-effects/react-postprocessing-effects.ts` and thread props through `SharedEffectStack.tsx`.
+3. Keep Monolith-only orchestration in `MonolithCanvas.jsx` when the behavior is tied to model loads, lighting, or material mutation rather than fullscreen compositing.
 4. Keep `gui.js`, `MonolithCanvas.jsx`, and any UI labels in sync if the effect is user-toggleable.
 
 ## Matrix
@@ -147,11 +132,12 @@ Atom now splits effect orchestration from the scene shell, even though most of t
 
 ## Common Edit Recipes
 
-### Add a shared Matrix-and-Atom effect
+### Add a shared effect
 
-1. Add the implementation in `src/shared/special-effects/react-postprocessing-effects.ts` if it is a custom `Effect`, or in `src/shared/special-effects/postprocessing-shaders.ts` if it belongs in a `ShaderPass`.
+1. Add the implementation in `src/shared/special-effects/react-postprocessing-effects.ts`.
 2. Thread new props through `src/shared/special-effects/SharedEffectStack.tsx`.
 3. Add defaults/config where needed:
+   - `visualizations/monolith/src/monolith/gui.js`
    - `visualizations/matrix/src/text-rain/matrix-effects-config.ts`
    - `visualizations/atom/src/atom/config.js`
 4. Expose controls in scene-specific GUI files if the effect should be tweakable.
@@ -171,7 +157,7 @@ Atom now splits effect orchestration from the scene shell, even though most of t
 1. Confirm whether the scene is imported directly into the root app.
 2. Run the root build, not just the submodule build.
 3. For Monolith assets, verify the asset exists in both `public/` trees.
-4. If the issue is a post-processing shader, check whether the effect is coming from the shared layer or the Monolith-only pipeline.
+4. If the issue is a fullscreen effect, trace the props into `SharedEffectStack.tsx` before debugging scene-local code.
 
 ## Verification
 
