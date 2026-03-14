@@ -7,6 +7,8 @@ import React, {
 } from 'react';
 
 import MonolithCanvas from '../visualizations/monolith/src/MonolithCanvas.jsx';
+import { isEditableTarget } from './shared/special-effects/index.ts';
+
 const MatrixCanvas = lazy(() => import('../visualizations/matrix/src/text-rain/App.tsx'));
 const AtomCanvas = lazy(() => import('../visualizations/atom/src/App.jsx'));
 
@@ -16,18 +18,19 @@ const SCENES = [
   { id: 'atom', label: 'Atom', Component: AtomCanvas },
 ];
 
-function isEditableTarget(target) {
-  return target instanceof HTMLElement && (
-    target.isContentEditable ||
-    target.tagName === 'INPUT' ||
-    target.tagName === 'TEXTAREA' ||
-    target.tagName === 'SELECT'
-  );
+function getWrappedIndex(currentIndex, direction, total) {
+  return (currentIndex + direction + total) % total;
 }
 
 export default function App() {
   const [sceneIndex, setSceneIndex] = useState(0);
   const [overlayOpen, setOverlayOpen] = useState(false);
+
+  const handleSceneSelect = (index) => {
+    startTransition(() => {
+      setSceneIndex(index);
+    });
+  };
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -40,10 +43,7 @@ export default function App() {
       const direction = event.key === 'ArrowDown' ? 1 : -1;
 
       startTransition(() => {
-        setSceneIndex((currentIndex) => {
-          const nextIndex = (currentIndex + direction + SCENES.length) % SCENES.length;
-          return nextIndex;
-        });
+        setSceneIndex((currentIndex) => getWrappedIndex(currentIndex, direction, SCENES.length));
       });
     };
 
@@ -55,14 +55,9 @@ export default function App() {
   const activeScene = SCENES[sceneIndex];
   const ActiveSceneComponent = activeScene.Component;
 
-  const handleSceneSelect = (index) => {
-    startTransition(() => {
-      setSceneIndex(index);
-    });
-  };
-
   return (
     <main className="eva-app">
+      {/* Render the active scene full-screen and keep the shell around it minimal. */}
       <div className="eva-scene">
         <Suspense fallback={<div className="eva-loading">loading scene...</div>}>
           <ActiveSceneComponent />
@@ -79,6 +74,7 @@ export default function App() {
         +
       </button>
 
+      {/* The overlay is the lightweight scene switcher and the only persistent UI. */}
       <div className={`eva-overlay ${overlayOpen ? 'is-open' : ''}`}>
         <p className="eva-kicker">Eva</p>
         <h1 className="eva-title">{activeScene.label}</h1>

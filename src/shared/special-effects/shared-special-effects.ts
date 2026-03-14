@@ -36,7 +36,16 @@ export interface HueCycleState {
   saturation: number;
 }
 
+export interface SharedSpecialEffectState extends ChromaticXrayState, HueCycleState {
+  currentFx: SharedFxMode;
+  pixelMosaicEnabled: boolean;
+  thermalVisionEnabled: boolean;
+}
+
 export type SharedSpecialEffectHandlers = Partial<Record<SharedSpecialEffectAction, () => void>>;
+export type SharedSpecialEffectUpdater<T extends SharedSpecialEffectState = SharedSpecialEffectState> = (
+  updater: (current: T) => T,
+) => void;
 
 const SHARED_SPECIAL_EFFECT_ACTIONS: Record<string, SharedSpecialEffectAction> = {
   '4': 'cinematic',
@@ -59,6 +68,29 @@ export function isEditableTarget(target: EventTarget | null) {
 
 export function toggleSharedFxMode(currentFx: SharedFxMode, nextFx: Exclude<SharedFxMode, 'none'>) {
   return currentFx === nextFx ? SHARED_FX_NONE : nextFx;
+}
+
+export function createInitialSharedSpecialEffectState(
+  overrides: Partial<SharedSpecialEffectState> = {},
+): SharedSpecialEffectState {
+  return {
+    chromaticAberrationEnabled: false,
+    currentFx: SHARED_FX_NONE,
+    hue: 0,
+    hueCycleBaseHue: 0,
+    hueCycleEnabled: false,
+    hueCycleSavedEnabled: false,
+    hueCycleSavedHue: 0,
+    hueCycleSavedSaturation: 0,
+    hueCycleStartTime: 0,
+    hueSatEnabled: false,
+    pixelMosaicEnabled: false,
+    restoreChromaticAfterXray: false,
+    saturation: 0,
+    thermalVisionEnabled: false,
+    xrayMode: false,
+    ...overrides,
+  };
 }
 
 export function setChromaticAberrationState(
@@ -145,6 +177,87 @@ export function toggleHueCycleState(state: HueCycleState, now: number): HueCycle
 
 export function getHueCycleHue(baseHue: number, startTime: number, now: number) {
   return ((baseHue + ((now - startTime) * HUE_CYCLE_SPEED) + Math.PI) % (Math.PI * 2)) - Math.PI;
+}
+
+export function setSharedChromaticAberrationEnabled<T extends SharedSpecialEffectState>(
+  state: T,
+  enabled: boolean,
+) {
+  return {
+    ...state,
+    ...setChromaticAberrationState(state, enabled),
+  };
+}
+
+export function setSharedXrayModeEnabled<T extends SharedSpecialEffectState>(
+  state: T,
+  enabled: boolean,
+) {
+  return {
+    ...state,
+    ...setXrayModeState(state, enabled),
+  };
+}
+
+export function applySharedSpecialEffectAction<T extends SharedSpecialEffectState>(
+  state: T,
+  action: SharedSpecialEffectAction,
+  now: number,
+) {
+  // Keep the scene packages declarative: each action returns the next full
+  // shared-effects snapshot instead of scattering small state mutations around.
+  switch (action) {
+    case 'cinematic':
+      return {
+        ...state,
+        currentFx: toggleSharedFxMode(state.currentFx, SHARED_FX_CINEMATIC),
+      };
+    case 'databend':
+      return {
+        ...state,
+        currentFx: toggleSharedFxMode(state.currentFx, SHARED_FX_DATABEND),
+      };
+    case 'chromaticAberration':
+      return setSharedChromaticAberrationEnabled(state, !state.chromaticAberrationEnabled);
+    case 'hueCycle':
+      return {
+        ...state,
+        ...toggleHueCycleState(state, now),
+      };
+    case 'pixelMosaic':
+      return {
+        ...state,
+        pixelMosaicEnabled: !state.pixelMosaicEnabled,
+      };
+    case 'thermalVision':
+      return {
+        ...state,
+        thermalVisionEnabled: !state.thermalVisionEnabled,
+      };
+    case 'xrayMode':
+      return setSharedXrayModeEnabled(state, !state.xrayMode);
+    default:
+      return state;
+  }
+}
+
+export function createSharedSpecialEffectHandlers<T extends SharedSpecialEffectState>(
+  updateState: SharedSpecialEffectUpdater<T>,
+  getNow: () => number = () => performance.now() / 1000,
+): Record<SharedSpecialEffectAction, () => void> {
+  const applyAction = (action: SharedSpecialEffectAction) => {
+    updateState((current) => applySharedSpecialEffectAction(current, action, getNow()));
+  };
+
+  return {
+    cinematic: () => applyAction('cinematic'),
+    chromaticAberration: () => applyAction('chromaticAberration'),
+    databend: () => applyAction('databend'),
+    hueCycle: () => applyAction('hueCycle'),
+    pixelMosaic: () => applyAction('pixelMosaic'),
+    thermalVision: () => applyAction('thermalVision'),
+    xrayMode: () => applyAction('xrayMode'),
+  };
 }
 
 export function createSharedEffectHotkeyListener(
