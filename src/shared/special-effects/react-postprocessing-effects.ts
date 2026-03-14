@@ -1,4 +1,4 @@
-import { BlendFunction, Effect } from 'postprocessing';
+import { BlendFunction, Effect, EffectAttribute } from 'postprocessing';
 import { Uniform, Vector2, WebGLRenderTarget, WebGLRenderer } from 'three';
 
 const hueSaturationFragment = /* glsl */ `
@@ -336,6 +336,9 @@ export class SharedPixelMosaicEffect extends Effect {
     const timeUniform = new Uniform(0);
 
     super('SharedPixelMosaicEffect', pixelMosaicFragment, {
+      // Force pixel mosaic into its own EffectPass so it runs after earlier
+      // color adjustments like hue/saturation instead of being fused with them.
+      attributes: EffectAttribute.CONVOLUTION,
       blendFunction: BlendFunction.NORMAL,
       uniforms: new Map<string, Uniform<any>>([
         ['resolution', resolutionUniform],
