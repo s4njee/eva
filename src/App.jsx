@@ -1,12 +1,12 @@
 import React, {
-  lazy,
   Suspense,
+  lazy,
   startTransition,
   useEffect,
   useState,
 } from 'react';
 
-const MonolithCanvas = lazy(() => import('../visualizations/monolith/src/MonolithCanvas.jsx'));
+import MonolithCanvas from '../visualizations/monolith/src/MonolithCanvas.jsx';
 const MatrixCanvas = lazy(() => import('../visualizations/matrix/src/text-rain/App.tsx'));
 const AtomCanvas = lazy(() => import('../visualizations/atom/src/App.jsx'));
 

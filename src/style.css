@@ -196,7 +196,10 @@ canvas {
   left: 50%;
   z-index: 10;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
+  width: min(calc(100vw - 24px), 520px);
   transform: translateX(-50%);
 }
 
