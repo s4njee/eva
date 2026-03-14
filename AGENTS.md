@@ -73,6 +73,7 @@ Practical rules:
 
 - always check `git status` at the root before editing
 - if you touch a submodule, also check `git -C visualizations/<name> status`
+- before running `git commit`, re-evaluate whether `README.md` and `AGENTS.md` should be updated to reflect any workflow, architecture, hotkey, asset, or verification changes introduced by the diff
 - a root commit does not contain the submodule file diff itself; it only records the submodule pointer
 - if the user wants commits, submodule edits may require:
   - a commit inside the submodule
@@ -260,6 +261,24 @@ When editing the root app:
 - keep root styles in `src/style.css`
 - remember that visualizations are loaded from submodule source, not prebuilt bundles
 
+## Special Effects Map
+
+Start with `docs/special-effects.md` if a task mentions post-processing, x-ray, hotkeys, shader passes, chromatic aberration, or "special effects."
+
+Current ownership split:
+
+- `src/shared/special-effects/index.ts`: barrel export for the shared effect API
+- `src/shared/special-effects/shared-special-effects.ts`: shared hotkeys and state transitions
+- `src/shared/special-effects/SharedEffectStack.tsx`: shared React composer used by Matrix and Atom
+- `src/shared/special-effects/react-postprocessing-effects.ts`: custom `Effect` classes for Matrix and Atom
+- `src/shared/special-effects/postprocessing-shaders.ts`: shared `ShaderPass` factories used by Monolith, including crosshatch and god rays
+- `visualizations/monolith/src/monolith/postprocessing.js`: Monolith-only composer orchestration
+
+Important rule:
+
+- do not reimplement chromatic-aberration/x-ray state coupling inside a visualization if `shared-special-effects.ts` already models it
+- if a new effect should exist in both Matrix and Atom, start in `src/shared/special-effects/` before adding scene-specific glue
+
 ## Monolith Notes
 
 Monolith is the most complex visualization in the repo.
@@ -381,6 +400,8 @@ Key files:
 
 - `visualizations/matrix/src/main.tsx`
 - `visualizations/matrix/src/text-rain/App.tsx`
+- `visualizations/matrix/src/text-rain/MatrixEffects.tsx`
+- `visualizations/matrix/src/text-rain/matrix-effects-config.ts`
 - `visualizations/matrix/src/text-rain/MatrixRain.tsx`
 - `visualizations/matrix/src/text-rain/MonolithPixelGlitchEffect.ts`
 
@@ -392,9 +413,15 @@ Important detail:
 Current hotkeys:
 
 - `g`: toggle the effects GUI
-- `z`: trigger glitch effect
-- `x`: reduce active rain columns
-- `c`: increase active rain columns
+- `4`: toggle cinematic mode
+- `z`: toggle databend mode
+- `x`: toggle x-ray mode
+- `c`: toggle chromatic aberration
+- `v`: toggle hue cycle
+- `b`: toggle pixel mosaic
+- `n`: toggle thermal vision
+- `[`: reduce active rain columns
+- `]`: increase active rain columns
 
 Matrix-specific cautions:
 
@@ -402,6 +429,7 @@ Matrix-specific cautions:
 - the `text-rain` implementation creates many text objects / instances
 - avoid unnecessary React state churn in per-frame behavior
 - preserve TypeScript types when editing
+- `MonolithPixelGlitchEffect.ts` is currently not wired into the active scene, so changes there may have no visible effect
 
 Deployment note:
 
@@ -414,22 +442,33 @@ Atom is much more monolithic than Monolith.
 Key files:
 
 - `visualizations/atom/src/App.jsx`
+- `visualizations/atom/src/atom/scene.jsx`
+- `visualizations/atom/src/atom/core.jsx`
+- `visualizations/atom/src/atom/gui.jsx`
 - `visualizations/atom/src/styles.css`
 
 Important detail:
 
-- `visualizations/atom/src/App.jsx` is very large and contains scene logic, geometry definitions, state, and effects in one file
+- `visualizations/atom/src/App.jsx` is now mostly the app shell and shared-effect state owner
+- scene composition lives in `visualizations/atom/src/atom/scene.jsx`
+- x-ray shader mutation lives in `visualizations/atom/src/atom/core.jsx`
 
 Current hotkeys include:
 
+- `g`: toggle the GUI
+- `4`: toggle cinematic mode
+- `z`: toggle databend mode
 - `c`: chromatic aberration toggle
+- `v`: hue cycle toggle
+- `b`: pixel mosaic toggle
+- `n`: thermal vision toggle
 - `x`: x-ray toggle
 
 Atom-specific cautions:
 
 - prefer surgical edits over broad refactors
-- if a cleanup is not user-requested, avoid turning this file inside out just to make it "nicer"
-- behavior is easier to accidentally regress here than in the more modular monolith code
+- behavior is split across `App.jsx`, `atom/scene.jsx`, `atom/core.jsx`, and `atom/gui.jsx`, so keep those in sync when changing effect behavior
+- x-ray behavior is partly material-level and partly post-processing-level; check both layers before assuming a bug is in only one place
 
 Standalone config note:
 

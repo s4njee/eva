@@ -21,7 +21,9 @@ import {
   SharedThermalVisionEffect,
 } from './react-postprocessing-effects.ts';
 
-interface SharedEffectStackProps {
+// Matrix and Atom share this declarative stack. Monolith keeps its own custom
+// composer because it needs isolated model renders for some passes.
+export interface SharedEffectStackProps {
   barrelBlurAmount?: number;
   barrelBlurEnabled?: boolean;
   bloomEnabled?: boolean;
@@ -115,6 +117,8 @@ export default function SharedEffectStack({
 
   const composerChildren: ReactElement[] = [];
 
+  // Keep the effect stack readable: each enabled flag contributes a single pass
+  // or effect instance here instead of spreading pass wiring across scene files.
   if (cinematicEnabled && bloomEnabled) {
     composerChildren.push(
       <Bloom

@@ -1,3 +1,4 @@
+// Shared keyboard/state helpers used by Matrix, Atom, and parts of Monolith.
 export const SHARED_FX_NONE = 'none';
 export const SHARED_FX_CINEMATIC = 'cinematic';
 export const SHARED_FX_DATABEND = 'databend';
@@ -64,6 +65,10 @@ export function setChromaticAberrationState(
   state: ChromaticXrayState,
   enabled: boolean,
 ): ChromaticXrayState {
+  // Chromatic aberration and x-ray are mutually exclusive screen treatments.
+  // When x-ray turns off we can restore the prior chromatic state, but the
+  // actual coupling logic should stay centralized here instead of being copied
+  // into scene packages.
   if (!enabled) {
     return {
       ...state,
@@ -146,6 +151,8 @@ export function createSharedEffectHotkeyListener(
   handlers: SharedSpecialEffectHandlers,
   { preventDefault = true } = {},
 ) {
+  // Scene packages supply the actual behavior; this helper only normalizes the
+  // shared hotkey map and editable-target guard.
   return (event: KeyboardEvent) => {
     if (event.repeat || isEditableTarget(event.target)) return false;
 

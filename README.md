@@ -35,6 +35,16 @@ Implications:
 - `public/`: root runtime assets.
 - `deploy.sh`: root production deploy script.
 
+## Special Effects Map
+
+If you are touching post-processing, x-ray, hotkeys, or shaders, start with [docs/special-effects.md](docs/special-effects.md).
+
+Short version:
+
+- `src/shared/special-effects/index.ts` is the shared effect API surface.
+- Matrix and Atom route most post-processing through `SharedEffectStack`.
+- Monolith keeps its own composer in `visualizations/monolith/src/monolith/postprocessing.js` because it needs isolated model-layer renders for effects like crosshatch and god rays.
+
 ## Install Dependencies
 
 Install only the root app:
