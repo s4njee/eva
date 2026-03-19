@@ -39,4 +39,4 @@ For post-processing and shared effect rules, start with [docs/special-effects.md
 
 ## Standalone Config Note
 
-- `visualizations/atom/vite.config.js` uses `base: '/atom/'`
+- `visualizations/atom/vite.config.js` uses `/` for local Vite dev and `'/atom/'` for production builds
