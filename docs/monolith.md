@@ -5,6 +5,7 @@ Monolith is the most complex visualization in the repo.
 ## Primary Files
 
 - `visualizations/monolith/src/MonolithCanvas.jsx`
+- `visualizations/monolith/src/monolith/asset-url.js`
 - `visualizations/monolith/src/monolith/set-defs.js`
 - `visualizations/monolith/src/monolith/lighting.js`
 - `visualizations/monolith/src/monolith/materials.js`
@@ -16,6 +17,7 @@ Monolith is the most complex visualization in the repo.
 ## Ownership Map
 
 - `MonolithCanvas.jsx`: orchestration, loaders, state machine, hotkeys, render loop, and Monolith-to-shared-effect wiring
+- `asset-url.js`: base-aware asset path resolution shared by standalone and root-served Monolith assets
 - `set-defs.js`: model lists, hidden sets, lighting defaults, per-set overrides
 - `lighting.js`: animated scene lighting and particle lighting rigs
 - `materials.js`: transform normalization, material overrides, x-ray shader behavior
@@ -28,7 +30,6 @@ Monolith is the most complex visualization in the repo.
 
 - `ArrowLeft` / `ArrowRight`: cycle models in the active set
 - `Tab`: cycle model sets
-- number keys: select models within the current set
 - hidden set hotkeys currently include `7`, `8`, and `0`
 - `g`: toggle GUI
 - `4`: cinematic FX toggle
@@ -47,6 +48,11 @@ Monolith is the most complex visualization in the repo.
 - model appearance changes are usually better placed in `materials.js` or `lighting.js` than jammed into the render loop
 - new models usually belong in `set-defs.js`, not hardcoded directly in `MonolithCanvas.jsx`
 - when adding UI controls, keep `gui.js`, `MonolithCanvas.jsx`, and the actual behavior in sync
+- Shanghai Bund HDRI loading still happens during initial scene setup, not lazily on first mode switch
+- Monolith still uses manual `three/addons` `OrbitControls` setup inside `MonolithCanvas.jsx`
+- the model cache currently keeps every loaded GLB for the session unless code explicitly disposes it
+- `ui.js`, parts of `overlays.js`, and the load-progress UI in `MonolithCanvas.jsx` still create DOM nodes imperatively outside React
+- `set-defs.js` material overrides are data-driven but still use predicate functions via `match(...)`
 
 For post-processing and shared effect rules, start with [docs/special-effects.md](special-effects.md).
 
