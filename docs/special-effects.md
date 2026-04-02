@@ -102,16 +102,9 @@ Matrix now uses the shared effect layer for most post-processing.
   - owns lil-gui controls
   - maps Matrix settings plus shared state into `SharedEffectStack`
 - `visualizations/matrix/src/text-rain/matrix-effects-config.ts`
-  - defaults for Matrix-specific tuning values
+  - defaults for Matrix-specific tuning values and palette presets
 - `visualizations/matrix/src/text-rain/MatrixRain.tsx`
-  - owns the rain renderer and the `[` / `]` active-column hotkeys
-
-### Legacy file worth knowing about
-
-- `visualizations/matrix/src/text-rain/MonolithPixelGlitchEffect.ts`
-  - custom effect class
-  - currently not wired into the active `text-rain/App.tsx` scene
-  - check usage before assuming changes here affect production
+  - owns the rain renderer and the `ArrowLeft` / `ArrowRight` active-column hotkeys
 
 ## Atom
 

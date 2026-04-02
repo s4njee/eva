@@ -124,11 +124,11 @@ npm run preview
 
 ## Verification Expectations
 
-There is no real automated test suite checked into this repo right now.
+There is still no broad automated test suite checked into this repo right now, but Matrix now has one committed browser-level visibility check.
 
 Notes:
 
-- `playwright` exists as a dependency in some packages, but there are no committed Playwright tests or config files at the root
+- root has a Playwright-backed `npm run check:matrix-visible` command that opens the standalone Matrix app, captures a browser screenshot, and verifies green glyph pixels are present
 - Matrix has lint configured; the others do not
 - the main safety check is a production build
 
@@ -137,6 +137,7 @@ Expected verification flow:
 - if you change root code or any imported visualization source, run root `npm run build`
 - if you change a submodule and it is meant to remain runnable standalone, also run that submodule's own build
 - if you change Matrix TypeScript, run both `npm run build` and `npm run lint` inside `visualizations/matrix`
+- if you finish Matrix visual work and want to confirm the rain is still actually visible, run `npm run check:matrix-visible` from the repo root or `npm run check:visible` inside `visualizations/matrix`
 
 Large bundle warnings from Vite are currently normal in this repo and are not by themselves a release blocker.
 

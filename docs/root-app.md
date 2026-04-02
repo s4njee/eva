@@ -7,6 +7,7 @@ This doc covers the homepage shell that swaps between Monolith, Matrix, and Atom
 - `src/App.jsx`
 - `src/main.jsx`
 - `src/style.css`
+- `src/shared/webgl/SafeCanvas.tsx`
 
 ## Behavior
 
@@ -18,6 +19,7 @@ This doc covers the homepage shell that swaps between Monolith, Matrix, and Atom
 
 - the root app is the canonical production entrypoint
 - the root app imports visualization source directly instead of embedding published builds
+- scene entrypoints should prefer `src/shared/webgl/SafeCanvas.tsx` so WebGL renderer setup can degrade to safer context attributes and show a fallback instead of crashing the shell
 - scene-switcher changes should stay isolated to `src/App.jsx` when possible
 - root UI styling should stay in `src/style.css`
 
@@ -30,6 +32,11 @@ This doc covers the homepage shell that swaps between Monolith, Matrix, and Atom
 - `../visualizations/atom/src/App.jsx`
 
 If you change any imported visualization source, run the root build.
+
+## WebGL Fallback
+
+- the shared safe canvas probes a few WebGL 2 context attribute combinations before mounting React Three Fiber
+- if none of those combinations work, the scene renders a fallback message instead of surfacing an uncaught renderer-init error
 
 ## Editing Guidance
 

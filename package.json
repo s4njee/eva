@@ -18,6 +18,7 @@
     "build:atom": "npm --prefix visualizations/atom run build",
     "build:all": "npm run build:root && npm run build:monolith && npm run build:matrix && npm run build:atom",
     "lint:matrix": "npm --prefix visualizations/matrix run lint",
+    "check:matrix-visible": "node scripts/check-matrix-visibility.mjs",
     "check": "npm run build:root && npm run build:monolith && npm run build:matrix && npm run lint:matrix && npm run build:atom",
     "preview": "npm run preview:root",
     "preview:root": "vite preview",
