@@ -1,6 +1,13 @@
-import { Canvas, type CanvasProps } from '@react-three/fiber';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { Canvas, type CanvasProps, useThree } from '@react-three/fiber';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { WebGLRenderer, type WebGLRendererParameters } from 'three';
+import {
+  FrameRateHud,
+  FrameRateMonitorBridge,
+  FrameRateMonitorProvider,
+  type FrameRateMonitorConfig,
+  useFrameRate,
+} from '../performance/index.ts';
 
 const R3F_DEFAULT_RENDERER_OPTIONS: WebGLRendererParameters = {
   alpha: true,
@@ -56,8 +63,10 @@ const BODY_STYLE = {
 
 type SafeCanvasProps = Omit<CanvasProps, 'fallback' | 'gl'> & {
   fallback?: ReactNode;
+  frameRateConfig?: Partial<FrameRateMonitorConfig>;
   rendererOptions?: WebGLRendererParameters;
   sceneLabel?: string;
+  showFrameRateOverlay?: boolean;
 };
 
 type ProbeState =
@@ -161,6 +170,30 @@ function probeRendererOptions(options: WebGLRendererParameters): ProbeState {
   return unsupportedProbe;
 }
 
+// Runs inside the R3F Canvas. Reads quality tier from FrameRateMonitorProvider
+// and calls gl.setPixelRatio() to step down fill rate on struggling GPUs.
+// Steps down immediately; recovers gradually (the FPS monitor's own smoothing
+// provides the necessary hysteresis before a tier upgrade is published).
+function AdaptiveDprBridge() {
+  const { gl } = useThree();
+  const { qualityTier } = useFrameRate();
+  const baseDprRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (baseDprRef.current === null) {
+      baseDprRef.current = gl.getPixelRatio();
+    }
+    // Threshold switching temporarily disabled. To re-enable, replace the
+    // line below with the tier-based logic:
+    //   const targetDpr = qualityTier === 'high' ? baseDpr
+    //     : qualityTier === 'medium' ? Math.min(baseDpr, 1.5) : 1;
+    const targetDpr = baseDprRef.current;
+    gl.setPixelRatio(targetDpr);
+  }, [qualityTier, gl]);
+
+  return null;
+}
+
 function SafeCanvasStatus({
   eyebrow,
   title,
@@ -184,8 +217,10 @@ function SafeCanvasStatus({
 export default function SafeCanvas({
   children,
   fallback,
+  frameRateConfig,
   rendererOptions,
   sceneLabel = 'Scene',
+  showFrameRateOverlay = true,
   ...props
 }: SafeCanvasProps) {
   const requestedOptions = useMemo(
@@ -236,15 +271,22 @@ export default function SafeCanvas({
   }
 
   return (
-    <Canvas
-      {...props}
-      fallback={fallback}
-      gl={(defaultProps) => new WebGLRenderer({
-        ...defaultProps,
-        ...probe.options,
-      })}
-    >
-      {children}
-    </Canvas>
+    <div style={SHELL_STYLE}>
+      <FrameRateMonitorProvider config={frameRateConfig}>
+        <Canvas
+          {...props}
+          fallback={fallback}
+          gl={(defaultProps) => new WebGLRenderer({
+            ...defaultProps,
+            ...probe.options,
+          })}
+        >
+          <FrameRateMonitorBridge />
+          <AdaptiveDprBridge />
+          {children}
+        </Canvas>
+        {showFrameRateOverlay ? <FrameRateHud label={sceneLabel} /> : null}
+      </FrameRateMonitorProvider>
+    </div>
   );
 }

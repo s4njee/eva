@@ -20,6 +20,7 @@ import {
   SharedScreenXrayEffect,
   SharedThermalVisionEffect,
 } from './react-postprocessing-effects.ts';
+import { useFrameRate } from '../performance/index.ts';
 
 // All three scenes now share this declarative fullscreen effect stack. Scene-
 // specific logic like Monolith's mesh-level x-ray stays outside this component.
@@ -98,6 +99,19 @@ export default function SharedEffectStack({
   screenXrayEnabled = false,
   thermalVisionEnabled = false,
 }: SharedEffectStackProps) {
+  const { qualityTier: _qualityTier } = useFrameRate();
+  // Threshold switching temporarily disabled — effects toggling on/off as FPS
+  // crosses boundaries is jarring. Re-enable by replacing 'high' with _qualityTier.
+  const qualityTier = 'high' as const;
+
+  // Adaptive quality: degrade gracefully when the GPU is struggling.
+  // medium (35–49 fps): scanlines off, bloom radius reduced
+  // low   (< 35 fps):   additionally bloom off, chromatic aberration off
+  const effectiveBloomEnabled = bloomEnabled && qualityTier !== 'low';
+  const effectiveScanlineEnabled = scanlineEnabled && qualityTier === 'high';
+  const effectiveChromaticEnabled = chromaticAberrationEnabled && qualityTier === 'high';
+  const effectiveBloomRadius = qualityTier === 'medium' ? Math.min(bloomRadius, 0.3) : bloomRadius;
+
   const barrelBlurOffsetVector = useMemo(() => new THREE.Vector2(barrelBlurOffsetX, barrelBlurOffsetY), []);
   const chromaticOffsetVector = useMemo(() => (
     new THREE.Vector2(
@@ -154,7 +168,7 @@ export default function SharedEffectStack({
     const baseChromaticOffsetX = chromaticOffsetX ?? chromaticOffset;
     const baseChromaticOffsetY = chromaticOffsetY ?? chromaticOffset;
 
-    if (chromaticAberrationEnabled) {
+    if (effectiveChromaticEnabled) {
       const now = performance.now() / 1000;
       const oscillation = 0.5 - 0.5 * Math.cos(now * chromaticOscillationSpeed);
       chromaticOffsetVector.set(
@@ -176,7 +190,7 @@ export default function SharedEffectStack({
 
   // Keep the effect stack readable: each enabled flag contributes a single pass
   // or effect instance here instead of spreading pass wiring across scene files.
-  if (cinematicEnabled && bloomEnabled) {
+  if (cinematicEnabled && effectiveBloomEnabled) {
     composerChildren.push(
       <Bloom
         key="bloom"
@@ -184,12 +198,12 @@ export default function SharedEffectStack({
         intensity={bloomIntensity}
         luminanceThreshold={bloomThreshold}
         luminanceSmoothing={bloomSmoothing}
-        radius={bloomRadius}
+        radius={effectiveBloomRadius}
       />,
     );
   }
 
-  if ((cinematicEnabled || databendEnabled) && scanlineEnabled) {
+  if ((cinematicEnabled || databendEnabled) && effectiveScanlineEnabled) {
     composerChildren.push(<primitive key="scanline" object={scanlineEffect} />);
   }
 
@@ -197,7 +211,7 @@ export default function SharedEffectStack({
     composerChildren.push(<primitive key="barrel" object={barrelBlurEffect} />);
   }
 
-  if (chromaticAberrationEnabled) {
+  if (effectiveChromaticEnabled) {
     composerChildren.push(
       <ChromaticAberration
         key="chromatic"

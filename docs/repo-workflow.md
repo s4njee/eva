@@ -26,6 +26,7 @@ Root app:
 
 - `src/App.jsx`: root scene switcher and overlay
 - `src/main.jsx`: root React entrypoint
+- `src/shared/performance/`: shared frame-rate monitor, thresholds, and HUD used via `SafeCanvas`
 - `src/style.css`: root UI styles
 - `public/`: runtime assets served by the root site
 - `deploy.sh`: root production deploy script
