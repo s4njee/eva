@@ -21,18 +21,20 @@ These affect all three scenes and should be done before scene-specific tuning.
 
 `FrameRateMonitor.tsx` — rolling EMA over the last 90 frames, published every 400 ms.
 `FrameRateMonitorProvider` / `FrameRateMonitorBridge` are mounted by `SafeCanvas` so
-every scene is covered. `useFrameRate()` exposes the snapshot.
+every scene is covered. `useFrameRate()` exposes the snapshot, including a shared
+binary quality tier: `high` at `>= 30 fps`, `low` below `30 fps`.
 
 Adaptive responses wired up (threshold switching currently disabled — re-enable
 per-file when ready to test on real low-end hardware):
 - **DPR** (`SafeCanvas` → `AdaptiveDprBridge`): steps `gl.setPixelRatio()` down to
   ≤ 1.5 (medium) or 1 (low), using the canvas's initial DPR as the ceiling.
-- **Effects** (`SharedEffectStack`): scanlines off at medium+; bloom off + chromatic
-  aberration off at low; bloom radius reduced at medium.
-- **Matrix columns** (`MatrixRain`): active-column count capped at 1500 (medium) or
-  800 (low) in the frame loop via `qualityTierRef`.
+- **Effects** (`SharedEffectStack`): low tier unmounts the fullscreen
+  `EffectComposer` entirely and falls back to direct scene rendering.
+- **Matrix columns** (`MatrixRain`): low-tier column capping is still available via
+  `qualityTierRef`, but remains disabled pending real low-end hardware testing.
 
-Thresholds: ≥ 50 fps → high, 35–49 → medium, < 35 → low.
+DPR transition thresholds: ≥ 50 fps → full DPR ceiling, 35–49 → medium DPR step,
+< 35 → lowest DPR step.
 
 ### 2. DPR reduction at runtime  *(implemented; needs low-end hardware validation)*
 
@@ -59,22 +61,20 @@ Current implementation:
   - Matrix still caps at `1.5`
   - Atom uses the shared default device cap path
 
-### 3. Automatic post-processing tier selection  *(not started)*
+### 3. Automatic post-processing tier selection  *(implemented; needs low-end hardware validation)*
 
 `SharedEffectStack` always mounts the full `EffectComposer` even when most effects
 are disabled. The composer itself costs a render-target ping-pong even with no
 active effects.
 
-**What to build:** A quality-tier system with three levels:
+**Current implementation:** The shared `qualityTier` now exposes only:
 
 | Tier | Condition | Stack |
 |------|-----------|-------|
-| High | FPS ≥ 50 and DPR ≥ 1.5 | All effects available |
-| Medium | FPS 35–49 or DPR < 1.5 | Bloom off, scanlines off, chromatic off; composer still mounted |
-| Low | FPS < 35 | `EffectComposer` unmounted entirely; render direct |
+| High | FPS ≥ 30 | Full effect stack is allowed |
+| Low | FPS < 30 | `EffectComposer` unmounted entirely; render direct |
 
-The tier should be readable by any scene. Consider a shared `QualityContext` or a
-simple exported signal.
+The tier is readable through `useFrameRate()` for any scene that wants to respond.
 
 ### 4. `failIfMajorPerformanceCaveat` probe leg  *(not started)*
 

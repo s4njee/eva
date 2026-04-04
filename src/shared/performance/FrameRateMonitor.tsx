@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 
-export type FrameRateQualityTier = 'high' | 'medium' | 'low';
+export type FrameRateQualityTier = 'high' | 'low';
 
 export interface FrameRateThresholds {
   high: number;
@@ -36,6 +36,8 @@ const DEFAULT_FRAME_RATE_THRESHOLDS: FrameRateThresholds = Object.freeze({
   high: 50,
   medium: 35,
 });
+
+const DEFAULT_FRAME_RATE_LOW_QUALITY_THRESHOLD = 30;
 
 export const DEFAULT_FRAME_RATE_MONITOR_CONFIG: FrameRateMonitorConfig = Object.freeze({
   publishIntervalMs: 400,
@@ -89,17 +91,8 @@ const FrameRateDispatchContext = createContext<Dispatch<SetStateAction<FrameRate
 
 function getFrameRateQualityTier(
   fps: number,
-  thresholds: FrameRateThresholds,
 ): FrameRateQualityTier {
-  if (fps >= thresholds.high) {
-    return 'high';
-  }
-
-  if (fps >= thresholds.medium) {
-    return 'medium';
-  }
-
-  return 'low';
+  return fps < DEFAULT_FRAME_RATE_LOW_QUALITY_THRESHOLD ? 'low' : 'high';
 }
 
 function mergeFrameRateMonitorConfig(
@@ -192,7 +185,7 @@ export function FrameRateMonitorBridge() {
     const nextSnapshot: FrameRateSnapshot = {
       fps: smoothedFpsRef.current,
       frameCount: frameCountRef.current,
-      qualityTier: getFrameRateQualityTier(smoothedFpsRef.current, config.thresholds),
+      qualityTier: getFrameRateQualityTier(smoothedFpsRef.current),
       sampleCount: frameTimesRef.current.length,
       thresholds: config.thresholds,
     };
@@ -223,14 +216,10 @@ export function FrameRateHud({
     ...FRAME_RATE_BADGE_STYLE,
     background: qualityTier === 'high'
       ? 'rgba(58, 191, 113, 0.2)'
-      : qualityTier === 'medium'
-        ? 'rgba(255, 184, 77, 0.2)'
-        : 'rgba(255, 107, 107, 0.2)',
+      : 'rgba(255, 107, 107, 0.2)',
     color: qualityTier === 'high'
       ? '#7dffad'
-      : qualityTier === 'medium'
-        ? '#ffd089'
-        : '#ff9d9d',
+      : '#ff9d9d',
   }), [qualityTier]);
 
   return (

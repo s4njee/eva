@@ -20,6 +20,8 @@ Monolith is the most complex visualization in the repo.
 - `asset-url.js`: base-aware asset path resolution shared by standalone and root-served Monolith assets
 - `set-defs.js`: model lists, hidden sets, lighting defaults, per-set overrides
 - `lighting.js`: animated scene lighting and particle lighting rigs
+  - scene mode now distinguishes animated styles from static styles so static looks do not fully recompute every frame
+  - the hero spotlight is style-specific instead of always on for every scene-light style
 - `materials.js`: transform normalization, material overrides, x-ray shader behavior
 - `overlays.js`: Troika text and DOM/image overlays
 - `ui.js`: DOM buttons and labels rendered over the canvas
@@ -30,6 +32,7 @@ Monolith is the most complex visualization in the repo.
 
 - `ArrowLeft` / `ArrowRight`: cycle models in the active set
 - `Tab`: cycle model sets
+- `Space`: temporarily boost animation speed for set `3`
 - hidden set hotkeys currently include `7`, `8`, and `0`
 - `g`: toggle GUI
 - `4`: cinematic FX toggle

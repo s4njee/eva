@@ -99,25 +99,11 @@ export default function SharedEffectStack({
   screenXrayEnabled = false,
   thermalVisionEnabled = false,
 }: SharedEffectStackProps) {
-  const { qualityTier: _qualityTier } = useFrameRate();
-  const adaptiveQualityEnabled = false;
-  const qualityTier = _qualityTier;
-
-  // Adaptive quality: degrade gracefully when the GPU is struggling.
-  // medium (35–49 fps): scanlines off, bloom radius reduced
-  // low   (< 35 fps):   additionally bloom off, chromatic aberration off
-  const effectiveBloomEnabled = adaptiveQualityEnabled
-    ? bloomEnabled && qualityTier !== 'low'
-    : bloomEnabled;
-  const effectiveScanlineEnabled = adaptiveQualityEnabled
-    ? scanlineEnabled && qualityTier === 'high'
-    : scanlineEnabled;
-  const effectiveChromaticEnabled = adaptiveQualityEnabled
-    ? chromaticAberrationEnabled && qualityTier === 'high'
-    : chromaticAberrationEnabled;
-  const effectiveBloomRadius = adaptiveQualityEnabled && qualityTier === 'medium'
-    ? Math.min(bloomRadius, 0.3)
-    : bloomRadius;
+  const { qualityTier } = useFrameRate();
+  const composerEnabled = qualityTier === 'high';
+  const effectiveBloomEnabled = bloomEnabled;
+  const effectiveScanlineEnabled = scanlineEnabled;
+  const effectiveChromaticEnabled = chromaticAberrationEnabled;
 
   const barrelBlurOffsetVector = useMemo(() => new THREE.Vector2(barrelBlurOffsetX, barrelBlurOffsetY), []);
   const chromaticOffsetVector = useMemo(() => (
@@ -205,7 +191,7 @@ export default function SharedEffectStack({
         intensity={bloomIntensity}
         luminanceThreshold={bloomThreshold}
         luminanceSmoothing={bloomSmoothing}
-        radius={effectiveBloomRadius}
+        radius={bloomRadius}
       />,
     );
   }
@@ -253,7 +239,9 @@ export default function SharedEffectStack({
     composerChildren.push(<primitive key="xray" object={screenXrayEffect} />);
   }
 
-  return (
-    <EffectComposer>{composerChildren}</EffectComposer>
-  );
+  if (!composerEnabled || composerChildren.length === 0) {
+    return null;
+  }
+
+  return <EffectComposer>{composerChildren}</EffectComposer>;
 }
