@@ -34,7 +34,7 @@ per-file when ready to test on real low-end hardware):
 
 Thresholds: ≥ 50 fps → high, 35–49 → medium, < 35 → low.
 
-### 2. DPR reduction at runtime  *(not started)*
+### 2. DPR reduction at runtime  *(implemented; needs low-end hardware validation)*
 
 `SafeCanvas` currently passes a static `dpr` prop from each scene's top-level
 component. Monolith passes `[1, Math.min(devicePixelRatio, 2)]` (R3F clamped range);
@@ -48,6 +48,16 @@ reactive `dpr` prop — passing a lower value mid-session is supported. Start at
 device's natural DPR and step down (e.g., 2 → 1.5 → 1) if FPS stays below threshold
 for several seconds. Do not step back up until FPS recovers for an equally long window
 (hysteresis prevents thrashing).
+
+Current implementation:
+- `SafeCanvas` now derives an adaptive DPR ladder from each scene's existing `dpr`
+  prop or default device DPR cap, then drives `<Canvas dpr={...}>` reactively.
+- Runtime transitions use the shared smoothed FPS snapshot plus a 3-second sustain
+  window before stepping down or back up.
+- Existing scene-specific ceilings are preserved:
+  - Monolith can still start as high as `2`
+  - Matrix still caps at `1.5`
+  - Atom uses the shared default device cap path
 
 ### 3. Automatic post-processing tier selection  *(not started)*
 

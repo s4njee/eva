@@ -61,6 +61,12 @@ const BODY_STYLE = {
   color: 'rgba(255, 255, 255, 0.74)',
 } as const;
 
+const DEFAULT_DEVICE_PIXEL_RATIO = 1;
+const DEFAULT_MAX_DEVICE_PIXEL_RATIO = 2;
+const ADAPTIVE_DPR_SUSTAIN_MS = 3000;
+const DPR_PRECISION = 100;
+const DPR_EPSILON = 0.01;
+
 type SafeCanvasProps = Omit<CanvasProps, 'fallback' | 'gl'> & {
   fallback?: ReactNode;
   frameRateConfig?: Partial<FrameRateMonitorConfig>;
@@ -127,6 +133,83 @@ function getRendererProbeKey(options: WebGLRendererParameters) {
   return JSON.stringify(options);
 }
 
+function getDevicePixelRatio() {
+  if (
+    typeof window === 'undefined'
+    || !Number.isFinite(window.devicePixelRatio)
+    || window.devicePixelRatio <= 0
+  ) {
+    return DEFAULT_DEVICE_PIXEL_RATIO;
+  }
+
+  return window.devicePixelRatio;
+}
+
+function roundDpr(value: number) {
+  return Math.round(value * DPR_PRECISION) / DPR_PRECISION;
+}
+
+function clampDpr(value: number, min: number, max: number) {
+  return roundDpr(Math.min(Math.max(value, min), max));
+}
+
+function normalizeDprProp(dpr: CanvasProps['dpr']) {
+  const deviceDpr = getDevicePixelRatio();
+
+  if (Array.isArray(dpr)) {
+    const [rawMin, rawMax] = dpr;
+    const minDpr = Math.min(rawMin, rawMax);
+    const maxDpr = Math.max(rawMin, rawMax);
+
+    return {
+      minDpr,
+      maxDpr,
+      initialDpr: clampDpr(deviceDpr, minDpr, maxDpr),
+    };
+  }
+
+  if (typeof dpr === 'number' && Number.isFinite(dpr) && dpr > 0) {
+    const exactDpr = roundDpr(dpr);
+
+    return {
+      minDpr: Math.min(DEFAULT_DEVICE_PIXEL_RATIO, exactDpr),
+      maxDpr: exactDpr,
+      initialDpr: exactDpr,
+    };
+  }
+
+  const maxDpr = Math.min(deviceDpr, DEFAULT_MAX_DEVICE_PIXEL_RATIO);
+
+  return {
+    minDpr: DEFAULT_DEVICE_PIXEL_RATIO,
+    maxDpr,
+    initialDpr: clampDpr(deviceDpr, DEFAULT_DEVICE_PIXEL_RATIO, maxDpr),
+  };
+}
+
+function buildAdaptiveDprSteps(dpr: CanvasProps['dpr']) {
+  const { minDpr, maxDpr, initialDpr } = normalizeDprProp(dpr);
+  const mediumDpr = clampDpr(1.5, minDpr, maxDpr);
+  const lowDpr = clampDpr(DEFAULT_DEVICE_PIXEL_RATIO, minDpr, maxDpr);
+  const steps = [initialDpr, mediumDpr, lowDpr].filter((value, index, values) => (
+    values.findIndex((candidate) => Math.abs(candidate - value) < DPR_EPSILON) === index
+  ));
+
+  return steps;
+}
+
+function getDprPropKey(dpr: CanvasProps['dpr']) {
+  if (Array.isArray(dpr)) {
+    return `${dpr[0]}:${dpr[1]}`;
+  }
+
+  if (typeof dpr === 'number') {
+    return `${dpr}`;
+  }
+
+  return 'default';
+}
+
 function probeRendererOptions(options: WebGLRendererParameters): ProbeState {
   const probeKey = getRendererProbeKey(options);
   const cachedProbe = probeCache.get(probeKey);
@@ -170,26 +253,75 @@ function probeRendererOptions(options: WebGLRendererParameters): ProbeState {
   return unsupportedProbe;
 }
 
-// Runs inside the R3F Canvas. Reads quality tier from FrameRateMonitorProvider
-// and calls gl.setPixelRatio() to step down fill rate on struggling GPUs.
-// Steps down immediately; recovers gradually (the FPS monitor's own smoothing
-// provides the necessary hysteresis before a tier upgrade is published).
-function AdaptiveDprBridge() {
+// Runs inside the R3F Canvas. Reads the shared FPS monitor and requests DPR
+// reductions only after the scene stays in a lower band long enough to avoid
+// oscillation from short-lived frame spikes.
+function AdaptiveDprBridge({
+  currentDpr,
+  dprSteps,
+  onDprChange,
+}: {
+  currentDpr: number;
+  dprSteps: number[];
+  onDprChange: (nextDpr: number) => void;
+}) {
   const { gl } = useThree();
-  const { qualityTier } = useFrameRate();
-  const baseDprRef = useRef<number | null>(null);
+  const { fps, sampleCount, thresholds } = useFrameRate();
+  const transitionDirectionRef = useRef<'up' | 'down' | null>(null);
+  const transitionStartTimeRef = useRef(0);
+  const currentStepIndex = useMemo(() => {
+    const matchedStepIndex = dprSteps.findIndex((step) => Math.abs(step - currentDpr) < DPR_EPSILON);
+
+    return matchedStepIndex === -1 ? 0 : matchedStepIndex;
+  }, [currentDpr, dprSteps]);
 
   useEffect(() => {
-    if (baseDprRef.current === null) {
-      baseDprRef.current = gl.getPixelRatio();
+    gl.setPixelRatio(currentDpr);
+  }, [currentDpr, gl]);
+
+  useEffect(() => {
+    if (sampleCount === 0 || dprSteps.length <= 1) {
+      transitionDirectionRef.current = null;
+      transitionStartTimeRef.current = 0;
+      return;
     }
-    // Threshold switching temporarily disabled. To re-enable, replace the
-    // line below with the tier-based logic:
-    //   const targetDpr = qualityTier === 'high' ? baseDpr
-    //     : qualityTier === 'medium' ? Math.min(baseDpr, 1.5) : 1;
-    const targetDpr = baseDprRef.current;
-    gl.setPixelRatio(targetDpr);
-  }, [qualityTier, gl]);
+
+    const canStepDown = currentStepIndex < dprSteps.length - 1;
+    const canStepUp = currentStepIndex > 0;
+    const downThreshold = canStepDown
+      ? (currentStepIndex === 0 && dprSteps.length > 2 ? thresholds.high : thresholds.medium)
+      : null;
+    const upThreshold = canStepUp
+      ? (currentStepIndex === 1 && dprSteps.length > 2 ? thresholds.high : thresholds.medium)
+      : null;
+    const nextDirection = canStepDown && downThreshold !== null && fps < downThreshold
+      ? 'down'
+      : canStepUp && upThreshold !== null && fps >= upThreshold
+        ? 'up'
+        : null;
+
+    if (nextDirection === null) {
+      transitionDirectionRef.current = null;
+      transitionStartTimeRef.current = 0;
+      return;
+    }
+
+    const now = performance.now();
+
+    if (transitionDirectionRef.current !== nextDirection) {
+      transitionDirectionRef.current = nextDirection;
+      transitionStartTimeRef.current = now;
+      return;
+    }
+
+    if (now - transitionStartTimeRef.current < ADAPTIVE_DPR_SUSTAIN_MS) {
+      return;
+    }
+
+    transitionDirectionRef.current = null;
+    transitionStartTimeRef.current = 0;
+    onDprChange(dprSteps[currentStepIndex + (nextDirection === 'down' ? 1 : -1)]);
+  }, [currentStepIndex, dprSteps, fps, onDprChange, sampleCount, thresholds]);
 
   return null;
 }
@@ -216,6 +348,7 @@ function SafeCanvasStatus({
 
 export default function SafeCanvas({
   children,
+  dpr: requestedDpr,
   fallback,
   frameRateConfig,
   rendererOptions,
@@ -223,6 +356,14 @@ export default function SafeCanvas({
   showFrameRateOverlay = true,
   ...props
 }: SafeCanvasProps) {
+  const requestedDprKey = getDprPropKey(requestedDpr);
+  const adaptiveDprSteps = useMemo(
+    () => buildAdaptiveDprSteps(requestedDpr),
+    [requestedDprKey],
+  );
+  const adaptiveDprKey = adaptiveDprSteps.join(':');
+  const initialAdaptiveDpr = adaptiveDprSteps[0];
+  const [adaptiveDpr, setAdaptiveDpr] = useState(() => adaptiveDprSteps[0]);
   const requestedOptions = useMemo(
     () => normalizeRendererOptions({
       ...R3F_DEFAULT_RENDERER_OPTIONS,
@@ -245,6 +386,10 @@ export default function SafeCanvas({
   useEffect(() => {
     setProbe(probeRendererOptions(requestedOptions));
   }, [probeKey, requestedOptions]);
+
+  useEffect(() => {
+    setAdaptiveDpr(initialAdaptiveDpr);
+  }, [adaptiveDprKey, initialAdaptiveDpr]);
 
   if (probe.status === 'unsupported') {
     return (
@@ -275,6 +420,7 @@ export default function SafeCanvas({
       <FrameRateMonitorProvider config={frameRateConfig}>
         <Canvas
           {...props}
+          dpr={adaptiveDpr}
           fallback={fallback}
           gl={(defaultProps) => new WebGLRenderer({
             ...defaultProps,
@@ -282,7 +428,11 @@ export default function SafeCanvas({
           })}
         >
           <FrameRateMonitorBridge />
-          <AdaptiveDprBridge />
+          <AdaptiveDprBridge
+            currentDpr={adaptiveDpr}
+            dprSteps={adaptiveDprSteps}
+            onDprChange={setAdaptiveDpr}
+          />
           {children}
         </Canvas>
         {showFrameRateOverlay ? <FrameRateHud label={sceneLabel} /> : null}

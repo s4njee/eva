@@ -100,17 +100,24 @@ export default function SharedEffectStack({
   thermalVisionEnabled = false,
 }: SharedEffectStackProps) {
   const { qualityTier: _qualityTier } = useFrameRate();
-  // Threshold switching temporarily disabled — effects toggling on/off as FPS
-  // crosses boundaries is jarring. Re-enable by replacing 'high' with _qualityTier.
-  const qualityTier = 'high' as const;
+  const adaptiveQualityEnabled = false;
+  const qualityTier = _qualityTier;
 
   // Adaptive quality: degrade gracefully when the GPU is struggling.
   // medium (35–49 fps): scanlines off, bloom radius reduced
   // low   (< 35 fps):   additionally bloom off, chromatic aberration off
-  const effectiveBloomEnabled = bloomEnabled && qualityTier !== 'low';
-  const effectiveScanlineEnabled = scanlineEnabled && qualityTier === 'high';
-  const effectiveChromaticEnabled = chromaticAberrationEnabled && qualityTier === 'high';
-  const effectiveBloomRadius = qualityTier === 'medium' ? Math.min(bloomRadius, 0.3) : bloomRadius;
+  const effectiveBloomEnabled = adaptiveQualityEnabled
+    ? bloomEnabled && qualityTier !== 'low'
+    : bloomEnabled;
+  const effectiveScanlineEnabled = adaptiveQualityEnabled
+    ? scanlineEnabled && qualityTier === 'high'
+    : scanlineEnabled;
+  const effectiveChromaticEnabled = adaptiveQualityEnabled
+    ? chromaticAberrationEnabled && qualityTier === 'high'
+    : chromaticAberrationEnabled;
+  const effectiveBloomRadius = adaptiveQualityEnabled && qualityTier === 'medium'
+    ? Math.min(bloomRadius, 0.3)
+    : bloomRadius;
 
   const barrelBlurOffsetVector = useMemo(() => new THREE.Vector2(barrelBlurOffsetX, barrelBlurOffsetY), []);
   const chromaticOffsetVector = useMemo(() => (
