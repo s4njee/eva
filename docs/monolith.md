@@ -35,7 +35,7 @@ Monolith is the most complex visualization in the repo.
 - `Space`: temporarily boost animation speed for set `3`
 - hidden set hotkeys currently include `7`, `8`, and `0`
 - `g`: toggle GUI
-- `4`: cinematic FX toggle
+- `4`: cinematic FX toggle with bloom oscillating between `0.2` and `1.2`, plus ambient light oscillating between `1` and `3.2`
 - `z`: databend / glitch-style FX toggle
 - `x`: x-ray toggle
 - `c`: chromatic aberration toggle
