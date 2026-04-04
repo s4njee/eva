@@ -1,0 +1,49 @@
+name: Deploy Production Site
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-s8njee-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify AWS credentials
+        run: aws sts get-caller-identity
+
+      - name: Build site
+        run: npx vite build
+
+      - name: Sync site files to S3
+        run: aws s3 sync dist/ s3://s8njee.com/ --delete --exclude ".DS_Store"
+
+      - name: Invalidate CloudFront
+        run: aws cloudfront create-invalidation --distribution-id E1AQDGH3QM4XK1 --paths "/*"

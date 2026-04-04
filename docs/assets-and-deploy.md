@@ -58,10 +58,18 @@ Do not hand-edit `dist/`.
 
 Root deploy:
 
+- default path: push or merge to `main`
+- workflow: `.github/workflows/deploy-s3.yml`
 - script: `./deploy.sh`
 - target: `s3://s8njee.com/`
 - CloudFront distribution: `E1AQDGH3QM4XK1`
 - effect: deploys the full root `dist/` site
+
+Workflow notes:
+
+- the GitHub Actions workflow mirrors the root `deploy.sh` steps
+- it requires AWS credentials to be available to Actions via repository or environment secrets
+- `./deploy.sh` remains the manual fallback for local deploys
 
 Monolith deploy:
 

@@ -196,6 +196,17 @@ Atom is a React Three Fiber scene with a large molecule catalog. The app shell i
 
 Root homepage deploy:
 
+Default production path:
+
+```bash
+git push origin main
+```
+
+That triggers the GitHub Actions workflow in `.github/workflows/deploy-s3.yml`, which
+builds the root app, syncs `dist/` to `s3://s8njee.com/`, and invalidates CloudFront.
+
+Manual fallback:
+
 ```bash
 ./deploy.sh
 ```

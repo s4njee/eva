@@ -132,6 +132,7 @@ Notes:
 - root has a Playwright-backed `npm run check:matrix-visible` command that opens the standalone Matrix app, captures a browser screenshot, and verifies green glyph pixels are present
 - Matrix has lint configured; the others do not
 - the main safety check is a production build
+- the default production deploy path for the root app is now the GitHub Actions workflow on pushes to `main`; `./deploy.sh` is the manual fallback
 
 Expected verification flow:
 
