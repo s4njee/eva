@@ -1,10 +1,7 @@
 name: Deploy Production Site
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_dispatch: # disabled: push to main now deploys via Cloudflare Pages
 
 permissions:
   contents: read
