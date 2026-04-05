@@ -5,12 +5,14 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { Routes, Route } from 'react-router-dom';
 
 import MonolithCanvas from '../visualizations/monolith/src/MonolithCanvas.jsx';
 import { isEditableTarget } from './shared/special-effects/index.ts';
 
 const MatrixCanvas = lazy(() => import('../visualizations/matrix/src/text-rain/App.tsx'));
 const AtomCanvas = lazy(() => import('../visualizations/atom/src/App.jsx'));
+const PlanesApp = lazy(() => import('./planes/App.jsx'));
 
 const SCENES = [
   { id: 'monolith', label: 'Monolith', Component: MonolithCanvas },
@@ -53,8 +55,21 @@ export default function App() {
   }, []);
 
   const activeScene = SCENES[sceneIndex];
-  const ActiveSceneComponent = activeScene.Component;
 
+  return (
+    <Routes>
+      <Route path="/planes/*" element={
+        <Suspense fallback={<div className="eva-loading">loading scene...</div>}>
+          <PlanesApp />
+        </Suspense>
+      } />
+      <Route path="*" element={<EvaApp sceneIndex={sceneIndex} overlayOpen={overlayOpen} setOverlayOpen={setOverlayOpen} handleSceneSelect={handleSceneSelect} activeScene={activeScene} />} />
+    </Routes>
+  );
+}
+
+function EvaApp({ sceneIndex, overlayOpen, setOverlayOpen, handleSceneSelect, activeScene }) {
+  const ActiveSceneComponent = activeScene.Component;
   return (
     <main className="eva-app">
       {/* Render the active scene full-screen and keep the shell around it minimal. */}
