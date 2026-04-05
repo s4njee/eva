@@ -1,4 +1,4 @@
-# AGENTS.md
+# CLAUDE.md
 
 Short entrypoint for humans and coding agents working in this repository. Read this first, then
 open only the linked docs that match the task.
