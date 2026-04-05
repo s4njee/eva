@@ -87,6 +87,8 @@ npm run check:matrix-visible    # from repo root — opens Chromium, verifies gr
 Root site (s8njee.com):
 - **Automatic:** push or merge to `main` → GitHub Actions runs `.github/workflows/deploy-s3.yml`
 - **Manual fallback:** `./deploy.sh` (requires AWS credentials in environment)
+- **Cloudflare Pages branch:** push to `cloudflare` → GitHub Actions runs `.github/workflows/deploy-cloudflare-pages.yml`
+- **Cloudflare manual fallback:** `./deploy-pages.sh` (requires `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `CLOUDFLARE_PAGES_PROJECT_NAME`)
 
 Matrix standalone (rain.s8njee.com):
 - `visualizations/matrix/deploy.sh`

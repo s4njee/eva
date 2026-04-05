@@ -71,6 +71,25 @@ Workflow notes:
 - it requires AWS credentials to be available to Actions via repository or environment secrets
 - `./deploy.sh` remains the manual fallback for local deploys
 
+Cloudflare Pages deploy on the `cloudflare` branch:
+
+- branch: `cloudflare`
+- workflow: `.github/workflows/deploy-cloudflare-pages.yml`
+- script: `./deploy-pages.sh`
+- build output: `dist/`
+- SPA routing: `public/_redirects`
+- target: Cloudflare Pages project named by `CLOUDFLARE_PAGES_PROJECT_NAME`
+
+Workflow notes:
+
+- the Cloudflare workflow runs on pushes to `cloudflare`
+- it requires `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as GitHub Secrets
+- it requires `CLOUDFLARE_PAGES_PROJECT_NAME` as a GitHub Actions variable
+- the checked-in `wrangler.toml` is now part of the Pages configuration source of truth
+- per Cloudflare Pages docs, Pages does not support branch-based configuration; a deployment from
+  `cloudflare` will be a preview or production deployment depending on that branch's role in the
+  Pages project settings
+
 Monolith deploy:
 
 - script: `visualizations/monolith/deploy.sh`
