@@ -63,9 +63,9 @@ const BODY_STYLE = {
 } as const;
 
 const DEFAULT_DEVICE_PIXEL_RATIO = 1;
-const DEFAULT_MAX_DEVICE_PIXEL_RATIO = 1.5;
+const DEFAULT_MAX_DEVICE_PIXEL_RATIO = 2;
 const LOW_END_DEVICE_PIXEL_RATIO = 0.75;
-const LOW_END_MAX_DEVICE_PIXEL_RATIO = 1;
+const LOW_END_MAX_DEVICE_PIXEL_RATIO = 2;
 const ADAPTIVE_DPR_SUSTAIN_MS = 3000;
 const LOW_END_ADAPTIVE_DPR_SUSTAIN_MS = 1200;
 const DPR_PRECISION = 100;
@@ -309,22 +309,18 @@ function probeRendererOptions(options: WebGLRendererParameters): ProbeState {
 }
 
 function shouldShowPerformanceOverlay() {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === 'undefined') return true;
 
   const params = new URLSearchParams(window.location.search);
-  let localStorageEnabled = false;
+  let localStorageDisabled = false;
 
   try {
-    localStorageEnabled = window.localStorage.getItem('eva:perf-overlay') === '1';
+    localStorageDisabled = window.localStorage.getItem('eva:perf-overlay') === '0';
   } catch {
-    localStorageEnabled = false;
+    localStorageDisabled = false;
   }
 
-  return (
-    params.has('perf')
-    || params.has('fps')
-    || localStorageEnabled
-  );
+  return !(params.has('no-perf') || params.has('no-fps') || localStorageDisabled);
 }
 
 function usePageVisibility() {
@@ -505,8 +501,7 @@ export default function SafeCanvas({
   const pageVisible = usePageVisibility();
   const effectiveFrameRateConfig = useMemo(() => ({
     ...frameRateConfig,
-    forcedQualityTier: lowEndRenderer ? 'low' as const : frameRateConfig?.forcedQualityTier,
-  }), [frameRateConfig, lowEndRenderer]);
+  }), [frameRateConfig]);
   const shouldShowOverlay = showFrameRateOverlay ?? shouldShowPerformanceOverlay();
   const adaptiveDprSustainMs = lowEndRenderer
     ? LOW_END_ADAPTIVE_DPR_SUSTAIN_MS

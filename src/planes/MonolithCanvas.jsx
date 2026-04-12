@@ -582,7 +582,6 @@ function MonolithScene() {
     camera.position.set(0, 2.5, 14);
     camera.updateProjectionMatrix();
 
-    gl.setPixelRatio(window.devicePixelRatio);
     gl.toneMapping = THREE.ACESFilmicToneMapping;
     gl.toneMappingExposure = 1.4;
     gl.domElement.style.position = 'relative';
@@ -769,7 +768,7 @@ function MonolithScene() {
 }
 
 export default function MonolithCanvas() {
-  const dpr = useMemo(() => [0.75, Math.min(window.devicePixelRatio, 1.5)], []);
+  const dpr = useMemo(() => [0.75, Math.min(window.devicePixelRatio, 2)], []);
 
   return (
     <SafeCanvas
