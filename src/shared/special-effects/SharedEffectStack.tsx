@@ -22,6 +22,16 @@ import {
 } from './react-postprocessing-effects.ts';
 import { useFrameRate } from '../performance/index.ts';
 
+function useLazyEffect<T>(enabled: boolean, factory: () => T) {
+  const effectRef = useRef<T | null>(null);
+
+  if (enabled && effectRef.current === null) {
+    effectRef.current = factory();
+  }
+
+  return effectRef.current;
+}
+
 // All three scenes now share this declarative fullscreen effect stack. Scene-
 // specific logic like Monolith's mesh-level x-ray stays outside this component.
 export interface SharedEffectStackProps {
@@ -101,9 +111,25 @@ export default function SharedEffectStack({
 }: SharedEffectStackProps) {
   const { qualityTier } = useFrameRate();
   const composerEnabled = qualityTier === 'high';
+  const composerResolutionScale = qualityTier === 'low' ? 0.5 : 1;
+  const bloomResolutionScale = qualityTier === 'low' ? 0.25 : 0.35;
+  const bloomIntensityLimit = qualityTier === 'low' ? 0.45 : 0.8;
+  const bloomRadiusLimit = qualityTier === 'low' ? 0.12 : 0.25;
+  const effectiveBloomIntensity = Math.min(bloomIntensity, bloomIntensityLimit);
+  const effectiveBloomRadius = Math.min(bloomRadius, bloomRadiusLimit);
+  const effectiveBloomThreshold = Math.max(bloomThreshold, 0.35);
+  const effectiveBloomSmoothing = Math.min(bloomSmoothing, 0.18);
   const effectiveBloomEnabled = bloomEnabled;
   const effectiveScanlineEnabled = scanlineEnabled;
   const effectiveChromaticEnabled = chromaticAberrationEnabled;
+  const barrelBlurActive = cinematicEnabled && barrelBlurEnabled;
+  const databendActive = databendEnabled;
+  const glitchActive = glitchEnabled;
+  const hueSatActive = hueSatEnabled || hueCycleEnabled;
+  const pixelMosaicActive = pixelMosaicEnabled;
+  const scanlineActive = (cinematicEnabled || databendEnabled) && effectiveScanlineEnabled;
+  const screenXrayActive = screenXrayEnabled;
+  const thermalVisionActive = thermalVisionEnabled;
 
   const barrelBlurOffsetVector = useMemo(() => new THREE.Vector2(barrelBlurOffsetX, barrelBlurOffsetY), []);
   const chromaticOffsetVector = useMemo(() => (
@@ -112,46 +138,55 @@ export default function SharedEffectStack({
       chromaticOffsetY ?? chromaticOffset,
     )
   ), []);
-  const hueSatEffect = useMemo(() => new SharedHueSaturationEffect(), []);
-  const barrelBlurEffect = useMemo(() => new SharedBarrelBlurEffect(), []);
-  const databendEffect = useMemo(() => new SharedDatabendEffect(), []);
-  const glitchBurstEffect = useMemo(() => new SharedGlitchBurstEffect(), []);
-  const pixelMosaicEffect = useMemo(() => new SharedPixelMosaicEffect(), []);
-  const scanlineEffect = useMemo(() => new SharedScanlineEffect(), []);
-  const thermalVisionEffect = useMemo(() => new SharedThermalVisionEffect(), []);
-  const screenXrayEffect = useMemo(() => new SharedScreenXrayEffect(), []);
+  const hueSatEffect = useLazyEffect(hueSatActive, () => new SharedHueSaturationEffect());
+  const barrelBlurEffect = useLazyEffect(barrelBlurActive, () => new SharedBarrelBlurEffect());
+  const databendEffect = useLazyEffect(databendActive, () => new SharedDatabendEffect());
+  const glitchBurstEffect = useLazyEffect(glitchActive, () => new SharedGlitchBurstEffect());
+  const pixelMosaicEffect = useLazyEffect(pixelMosaicActive, () => new SharedPixelMosaicEffect());
+  const scanlineEffect = useLazyEffect(scanlineActive, () => new SharedScanlineEffect());
+  const thermalVisionEffect = useLazyEffect(thermalVisionActive, () => new SharedThermalVisionEffect());
+  const screenXrayEffect = useLazyEffect(screenXrayActive, () => new SharedScreenXrayEffect());
   const lastGlitchTriggerTokenRef = useRef(glitchTriggerToken);
 
   useEffect(() => {
+    if (!barrelBlurEffect) return;
     barrelBlurEffect.setAmount(barrelBlurAmount);
   }, [barrelBlurAmount, barrelBlurEffect]);
 
   useEffect(() => {
+    if (!barrelBlurEffect) return;
     barrelBlurOffsetVector.set(barrelBlurOffsetX, barrelBlurOffsetY);
     barrelBlurEffect.setOffset(barrelBlurOffsetVector);
   }, [barrelBlurEffect, barrelBlurOffsetVector, barrelBlurOffsetX, barrelBlurOffsetY]);
 
   useEffect(() => {
+    if (!glitchBurstEffect) return;
     glitchBurstEffect.setDuration(glitchDuration);
   }, [glitchBurstEffect, glitchDuration]);
 
   useEffect(() => {
+    if (!glitchBurstEffect) return;
     glitchBurstEffect.setStrength(glitchStrength);
   }, [glitchBurstEffect, glitchStrength]);
 
   useEffect(() => {
-    if (!glitchEnabled || glitchTriggerToken === lastGlitchTriggerTokenRef.current) return;
+    if (
+      !glitchBurstEffect
+      || !glitchEnabled
+      || glitchTriggerToken === lastGlitchTriggerTokenRef.current
+    ) return;
     lastGlitchTriggerTokenRef.current = glitchTriggerToken;
     glitchBurstEffect.trigger();
   }, [glitchBurstEffect, glitchEnabled, glitchTriggerToken]);
 
   useEffect(() => {
-    if (hueCycleEnabled) return;
+    if (!hueSatEffect || hueCycleEnabled) return;
     hueSatEffect.setHue(hue);
     hueSatEffect.setSaturation(saturation);
   }, [hue, hueCycleEnabled, hueSatEffect, saturation]);
 
   useEffect(() => {
+    if (!scanlineEffect) return;
     scanlineEffect.setDensity(scanlineDensity);
     scanlineEffect.setOpacity(scanlineOpacity);
     scanlineEffect.setScrollSpeed(scanlineScrollSpeed);
@@ -174,8 +209,8 @@ export default function SharedEffectStack({
 
     if (hueCycleEnabled) {
       const hueValue = getHueCycleHue(hueCycleBaseHue, hueCycleStartTime, performance.now() / 1000);
-      hueSatEffect.setHue(hueValue);
-      hueSatEffect.setSaturation(1);
+      hueSatEffect?.setHue(hueValue);
+      hueSatEffect?.setSaturation(1);
     }
   });
 
@@ -187,20 +222,21 @@ export default function SharedEffectStack({
     composerChildren.push(
       <Bloom
         key="bloom"
-        mipmapBlur
-        intensity={bloomIntensity}
-        luminanceThreshold={bloomThreshold}
-        luminanceSmoothing={bloomSmoothing}
-        radius={bloomRadius}
+        mipmapBlur={false}
+        intensity={effectiveBloomIntensity}
+        luminanceThreshold={effectiveBloomThreshold}
+        luminanceSmoothing={effectiveBloomSmoothing}
+        radius={effectiveBloomRadius}
+        resolutionScale={bloomResolutionScale}
       />,
     );
   }
 
-  if ((cinematicEnabled || databendEnabled) && effectiveScanlineEnabled) {
+  if (scanlineActive && scanlineEffect) {
     composerChildren.push(<primitive key="scanline" object={scanlineEffect} />);
   }
 
-  if (cinematicEnabled && barrelBlurEnabled) {
+  if (barrelBlurActive && barrelBlurEffect) {
     composerChildren.push(<primitive key="barrel" object={barrelBlurEffect} />);
   }
 
@@ -215,27 +251,27 @@ export default function SharedEffectStack({
     );
   }
 
-  if (glitchEnabled) {
+  if (glitchActive && glitchBurstEffect) {
     composerChildren.push(<primitive key="glitch" object={glitchBurstEffect} />);
   }
 
-  if (databendEnabled) {
+  if (databendActive && databendEffect) {
     composerChildren.push(<primitive key="databend" object={databendEffect} />);
   }
 
-  if (hueSatEnabled || hueCycleEnabled) {
+  if (hueSatActive && hueSatEffect) {
     composerChildren.push(<primitive key="hue" object={hueSatEffect} />);
   }
 
-  if (pixelMosaicEnabled) {
+  if (pixelMosaicActive && pixelMosaicEffect) {
     composerChildren.push(<primitive key="pixel" object={pixelMosaicEffect} />);
   }
 
-  if (thermalVisionEnabled) {
+  if (thermalVisionActive && thermalVisionEffect) {
     composerChildren.push(<primitive key="thermal" object={thermalVisionEffect} />);
   }
 
-  if (screenXrayEnabled) {
+  if (screenXrayActive && screenXrayEffect) {
     composerChildren.push(<primitive key="xray" object={screenXrayEffect} />);
   }
 
@@ -243,5 +279,12 @@ export default function SharedEffectStack({
     return null;
   }
 
-  return <EffectComposer>{composerChildren}</EffectComposer>;
+  return (
+    <EffectComposer
+      multisampling={0}
+      resolutionScale={composerResolutionScale}
+    >
+      {composerChildren}
+    </EffectComposer>
+  );
 }

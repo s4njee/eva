@@ -123,6 +123,10 @@ canvas {
   gap: 8px;
 }
 
+.eva-quality-switcher {
+  margin-top: 16px;
+}
+
 .eva-scene-tab {
   padding: 8px 12px;
   border: 1px solid rgba(255, 255, 255, 0.18);

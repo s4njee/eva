@@ -1,13 +1,69 @@
 import * as THREE from 'three';
 import { resolveAssetUrl } from './asset-url.js';
 
+const PARTICLE_VERTEX_SHADER = /* glsl */ `
+  attribute float aVelocity;
+  attribute float aSeed;
+
+  uniform float uTime;
+  uniform float uPointSize;
+
+  varying float vSeed;
+  varying float vFlicker;
+
+  void main() {
+    float currentY = mod(position.y - (uTime * aVelocity), 26.0) - 1.0;
+    float currentX = position.x + sin((uTime * 0.9) + aSeed) * 0.08;
+    vec3 animatedPosition = vec3(currentX, currentY, position.z);
+    vec4 mvPosition = modelViewMatrix * vec4(animatedPosition, 1.0);
+
+    vSeed = aSeed;
+    vFlicker = 0.65 + (0.35 * sin((uTime * 3.0) + (aSeed * 7.13)));
+    gl_Position = projectionMatrix * mvPosition;
+    gl_PointSize = uPointSize * (12.0 / max(1.0, -mvPosition.z));
+  }
+`;
+
+const PARTICLE_FRAGMENT_SHADER = /* glsl */ `
+  uniform sampler2D uTexture;
+  uniform float uHueType;
+  uniform float uTime;
+
+  varying float vSeed;
+  varying float vFlicker;
+
+  vec3 hsl2rgb(vec3 c) {
+    vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+    return c.z + c.y * (rgb - 0.5) * (1.0 - abs(2.0 * c.z - 1.0));
+  }
+
+  void main() {
+    vec4 texel = texture2D(uTexture, gl_PointCoord);
+    float alpha = texel.a * texel.r;
+    if (alpha < 0.02) discard;
+
+    float baseHue = 0.0;
+    float saturation = 0.0;
+    if (uHueType > 1.5) {
+      baseHue = mod((uTime * 0.1) + (vSeed * 0.013), 1.0);
+      saturation = 1.0;
+    } else if (uHueType > 0.5) {
+      baseHue = 0.04 + sin(uTime) * 0.02 + sin(uTime * 2.3) * 0.01;
+      saturation = 1.0;
+    }
+
+    vec3 color = hsl2rgb(vec3(baseHue, saturation, 0.45 + (vFlicker * 0.3)));
+    gl_FragColor = vec4(color, alpha * 0.85);
+  }
+`;
+
 // ── Lighting rig ──────────────────────────────────────────────────────────────
 // Creates and animates all Three.js lights used by MonolithScene.
 // Two lighting modes are supported:
 //   Mode A (Scene)     — a static backdrop of directional/spot/street lights,
 //                        style selected by the active model collection definition.
-//   Mode B (Particles) — 5000 falling particles with 6 proximity point lights
-//                        that respond to how close particles are to the model.
+//   Mode B (Particles) — 5000 shader-driven falling sprites with a small
+//                        falling PointLight rig around the model.
 //
 // The returned object exposes only the methods MonolithScene needs;
 // all internal light instances and buffers are fully encapsulated.
@@ -21,7 +77,7 @@ export function createLightingRig({ scene, currentSetDef, getCurrentModelIndex, 
 
   // ── Particle system (Lighting mode B) ──────────────────────────────────────
   // 5000 falling point-sprites that drift downward and wrap at y=-1.
-  // Their positions drive proximity glow lights toward the active model.
+  // A separate lightweight PointLight rig provides real lighting on the model.
   const ambient = new THREE.AmbientLight(0xffffff, 0);
   scene.add(ambient);
 
@@ -29,25 +85,31 @@ export function createLightingRig({ scene, currentSetDef, getCurrentModelIndex, 
   const particleGeo = new THREE.BufferGeometry();
   const particlePositions = new Float32Array(particleCount * 3);
   const velocities = new Float32Array(particleCount);
+  const particleSeeds = new Float32Array(particleCount);
   for (let i = 0; i < particleCount; i++) {
     particlePositions[i * 3] = (Math.random() - 0.5) * 30;
     particlePositions[i * 3 + 1] = Math.random() * 25;
     particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 30;
-    velocities[i] = 0.01 + Math.random() * 0.03;
+    velocities[i] = 1.2 + Math.random() * 2.6;
+    particleSeeds[i] = Math.random() * 1000;
   }
-  const particleColors = new Float32Array(particleCount * 3);
   particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-  particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+  particleGeo.setAttribute('aVelocity', new THREE.BufferAttribute(velocities, 1));
+  particleGeo.setAttribute('aSeed', new THREE.BufferAttribute(particleSeeds, 1));
 
   const particleTexture = new THREE.TextureLoader().load(resolveAssetUrl('/textures/star_02.png'));
-  const particleMat = new THREE.PointsMaterial({
-    size: 0.18,
-    sizeAttenuation: true,
-    map: particleTexture,
+  const particleMat = new THREE.ShaderMaterial({
+    vertexShader: PARTICLE_VERTEX_SHADER,
+    fragmentShader: PARTICLE_FRAGMENT_SHADER,
+    uniforms: {
+      uHueType: { value: 0 },
+      uPointSize: { value: 28 },
+      uTexture: { value: particleTexture },
+      uTime: { value: 0 },
+    },
     transparent: true,
     depthWrite: false,
     blending: THREE.NormalBlending,
-    vertexColors: true,
   });
   const particles = new THREE.Points(particleGeo, particleMat);
   particles.visible = false;
@@ -55,11 +117,10 @@ export function createLightingRig({ scene, currentSetDef, getCurrentModelIndex, 
 
   const glowLights = [];
   const glowCount = 6;
-  const GLOW_RADIUS = 25;
+  let glowLightsAttached = false;
   for (let i = 0; i < glowCount; i++) {
     const light = new THREE.PointLight(0xffffff, 0, 8);
     light.position.set(0, -10, 0);
-    scene.add(light);
     glowLights.push(light);
   }
 
@@ -114,8 +175,6 @@ export function createLightingRig({ scene, currentSetDef, getCurrentModelIndex, 
   scene.add(heroSpotLight);
   scene.add(heroSpotLight.target);
 
-  let lightFrame = 0;
-  const tempColor = new THREE.Color();
   let lastStaticSceneSignature = null;
 
   function resetAllLights() {
@@ -138,6 +197,20 @@ export function createLightingRig({ scene, currentSetDef, getCurrentModelIndex, 
   function clearParticleGlow() {
     glowLights.forEach((light) => {
       light.intensity = 0;
+    });
+  }
+
+  function setParticleLightingEnabled(enabled) {
+    particles.visible = enabled;
+    if (enabled === glowLightsAttached) return;
+
+    glowLightsAttached = enabled;
+    glowLights.forEach((light) => {
+      if (enabled) {
+        scene.add(light);
+      } else {
+        scene.remove(light);
+      }
     });
   }
 
@@ -232,21 +305,6 @@ export function createLightingRig({ scene, currentSetDef, getCurrentModelIndex, 
     streetLight2.intensity = intensityScale * falloff2;
   }
 
-  function animateParticlePositions({ nowMs }) {
-    const positions = particles.geometry.attributes.position.array;
-    for (let i = 0; i < particleCount; i++) {
-      positions[i * 3 + 1] -= velocities[i];
-      positions[i * 3] += Math.sin(nowMs * 0.001 + i) * 0.002;
-      if (positions[i * 3 + 1] < -1) {
-        positions[i * 3 + 1] = 25;
-        positions[i * 3] = (Math.random() - 0.5) * 30;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
-      }
-    }
-    particles.geometry.attributes.position.needsUpdate = true;
-    return positions;
-  }
-
   function getParticleBaseHue({ hueType, time }) {
     if (hueType === 'warm') {
       return 0.04 + Math.sin(time) * 0.02 + Math.sin(time * 2.3) * 0.01 + Math.sin(time * 5.7) * 0.01;
@@ -257,66 +315,32 @@ export function createLightingRig({ scene, currentSetDef, getCurrentModelIndex, 
     return 0;
   }
 
-  function updateParticleColors({ time, hueType }) {
-    const colors = particles.geometry.attributes.color.array;
-    let baseHue = getParticleBaseHue({ hueType, time });
-
-    for (let i = 0; i < particleCount; i++) {
-      const flicker = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(time * 3 + i * 7.13));
-      if (hueType === 'warm') {
-        tempColor.setHSL(baseHue + Math.sin(i * 3.77 + time) * 0.03, 1.0, 0.35 + flicker * 0.4);
-      } else if (hueType === 'rainbow') {
-        tempColor.setHSL((baseHue + i / particleCount + Math.sin(i * 0.5 + time) * 0.1) % 1.0, 1.0, 0.35 + flicker * 0.4);
-      } else {
-        tempColor.setHSL(0, 0, 0.6 + flicker * 0.35);
-      }
-      colors[i * 3] = tempColor.r;
-      colors[i * 3 + 1] = tempColor.g;
-      colors[i * 3 + 2] = tempColor.b;
-    }
-
-    particles.geometry.attributes.color.needsUpdate = true;
-    return baseHue;
+  function getParticleHueTypeId(hueType) {
+    if (hueType === 'warm') return 1;
+    if (hueType === 'rainbow') return 2;
+    return 0;
   }
 
-  function collectNearestParticlesToMonolith(positions, monolithPosition) {
-    const nearest = [];
-
-    for (let i = 0; i < particleCount; i++) {
-      const x = positions[i * 3];
-      const y = positions[i * 3 + 1];
-      const z = positions[i * 3 + 2];
-      const dx = x - monolithPosition.x;
-      const dy = y - monolithPosition.y;
-      const dz = z - monolithPosition.z;
-      const distSq = dx * dx + dy * dy + dz * dz;
-
-      if (distSq < GLOW_RADIUS * GLOW_RADIUS) {
-        nearest.push({ x, y, z, distSq });
-        if (nearest.length > glowCount * 3) {
-          nearest.sort((a, b) => a.distSq - b.distSq);
-          nearest.length = glowCount;
-        }
-      }
-    }
-
-    nearest.sort((a, b) => a.distSq - b.distSq);
-    return nearest;
-  }
-
-  function updateParticleGlowLights({ baseHue, hueType, nearestParticles }) {
+  function updateFallingParticleGlowLights({ nowSeconds, monolith, baseHue, hueType }) {
     const saturation = hueType === 'warm' || hueType === 'rainbow' ? 1.0 : 0;
 
     for (let i = 0; i < glowCount; i++) {
       const light = glowLights[i];
-      if (i < nearestParticles.length) {
-        const particle = nearestParticles[i];
-        light.position.set(particle.x, particle.y, particle.z);
-        light.intensity = (1 - Math.sqrt(particle.distSq) / GLOW_RADIUS) * 6;
-        light.color.setHSL(baseHue, saturation, 0.5);
-      } else {
-        light.intensity = 0;
-      }
+      const phase = i / glowCount;
+      const speed = 0.34 + (i * 0.035);
+      const progress = (nowSeconds * speed + phase) % 1;
+      const angle = (phase * Math.PI * 2) + Math.sin(nowSeconds * 0.42 + i) * 0.45;
+      const radius = 1.4 + ((i % 3) * 0.85);
+      const pulse = getPulse(progress);
+
+      light.position.set(
+        monolith.position.x + Math.cos(angle) * radius,
+        RING_TOP - progress * RING_RANGE,
+        monolith.position.z + Math.sin(angle) * radius,
+      );
+      light.intensity = 1.1 + (pulse * 4.8);
+      light.distance = 9;
+      light.color.setHSL((baseHue + phase * 0.08) % 1, saturation, 0.58);
     }
   }
 
@@ -423,24 +447,24 @@ export function createLightingRig({ scene, currentSetDef, getCurrentModelIndex, 
   // ── Per-frame update entry points ───────────────────────────────────────────
 
   function updateParticleLighting() {
+    setParticleLightingEnabled(true);
     resetAllLights();
     ambient.color.set(0xffffff);
     ambient.intensity = 0.08;
     const nowMs = Date.now();
-    const positions = animateParticlePositions({ nowMs });
+    const nowSeconds = performance.now() * 0.001;
     const t = nowMs * 0.005;
     const hueType = currentSetDef().particleHue;
-    let baseHue = getParticleBaseHue({ hueType, time: t });
+    const baseHue = getParticleBaseHue({ hueType, time: t });
+    particleMat.uniforms.uTime.value = nowSeconds;
+    particleMat.uniforms.uHueType.value = getParticleHueTypeId(hueType);
 
-    // Throttle color + glow-light computation to every 4th frame to reduce
-    // the per-frame cost of iterating all 5000 particles on the CPU.
-    if (lightFrame % 4 === 0) {
-      baseHue = updateParticleColors({ time: t, hueType });
-      const monolith = getMonolith();
-      const nearestParticles = collectNearestParticlesToMonolith(positions, monolith.position);
-      updateParticleGlowLights({ baseHue, hueType, nearestParticles });
-    }
-    lightFrame++;
+    updateFallingParticleGlowLights({
+      nowSeconds,
+      monolith: getMonolith(),
+      baseHue,
+      hueType,
+    });
   }
 
   function updateSceneLighting({ forceRefresh = false } = {}) {
@@ -496,6 +520,7 @@ export function createLightingRig({ scene, currentSetDef, getCurrentModelIndex, 
     animateBloomRing,
     clearParticleGlow,
     particles,
+    setParticleLightingEnabled,
     updateParticleLighting,
     updateSceneLighting,
   };

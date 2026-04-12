@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 
-export type FrameRateQualityTier = 'high' | 'low';
+export type FrameRateQualityTier = 'high' | 'medium' | 'low';
 
 export interface FrameRateThresholds {
   high: number;
@@ -18,6 +18,7 @@ export interface FrameRateThresholds {
 }
 
 export interface FrameRateMonitorConfig {
+  forcedQualityTier?: FrameRateQualityTier | null;
   publishIntervalMs: number;
   sampleSize: number;
   smoothingFactor: number;
@@ -25,6 +26,7 @@ export interface FrameRateMonitorConfig {
 }
 
 export interface FrameRateSnapshot {
+  dpr: number;
   fps: number;
   frameCount: number;
   qualityTier: FrameRateQualityTier;
@@ -40,6 +42,7 @@ const DEFAULT_FRAME_RATE_THRESHOLDS: FrameRateThresholds = Object.freeze({
 const DEFAULT_FRAME_RATE_LOW_QUALITY_THRESHOLD = 30;
 
 export const DEFAULT_FRAME_RATE_MONITOR_CONFIG: FrameRateMonitorConfig = Object.freeze({
+  forcedQualityTier: null,
   publishIntervalMs: 400,
   sampleSize: 90,
   smoothingFactor: 0.2,
@@ -47,6 +50,7 @@ export const DEFAULT_FRAME_RATE_MONITOR_CONFIG: FrameRateMonitorConfig = Object.
 });
 
 const DEFAULT_FRAME_RATE_SNAPSHOT: FrameRateSnapshot = Object.freeze({
+  dpr: 1,
   fps: 0,
   frameCount: 0,
   qualityTier: 'high',
@@ -91,8 +95,13 @@ const FrameRateDispatchContext = createContext<Dispatch<SetStateAction<FrameRate
 
 function getFrameRateQualityTier(
   fps: number,
+  thresholds: FrameRateThresholds,
+  forcedQualityTier: FrameRateQualityTier | null = null,
 ): FrameRateQualityTier {
-  return fps < DEFAULT_FRAME_RATE_LOW_QUALITY_THRESHOLD ? 'low' : 'high';
+  if (forcedQualityTier) return forcedQualityTier;
+  if (fps < DEFAULT_FRAME_RATE_LOW_QUALITY_THRESHOLD) return 'low';
+  if (fps < thresholds.high) return 'medium';
+  return 'high';
 }
 
 function mergeFrameRateMonitorConfig(
@@ -118,6 +127,7 @@ export function FrameRateMonitorProvider({
   const mergedConfig = useMemo(() => mergeFrameRateMonitorConfig(config), [config]);
   const [snapshot, setSnapshot] = useState<FrameRateSnapshot>({
     ...DEFAULT_FRAME_RATE_SNAPSHOT,
+    qualityTier: mergedConfig.forcedQualityTier ?? DEFAULT_FRAME_RATE_SNAPSHOT.qualityTier,
     thresholds: mergedConfig.thresholds,
   });
 
@@ -183,23 +193,31 @@ export function FrameRateMonitorBridge() {
     lastPublishTimeRef.current = now;
 
     const nextSnapshot: FrameRateSnapshot = {
+      dpr: DEFAULT_FRAME_RATE_SNAPSHOT.dpr,
       fps: smoothedFpsRef.current,
       frameCount: frameCountRef.current,
-      qualityTier: getFrameRateQualityTier(smoothedFpsRef.current),
+      qualityTier: getFrameRateQualityTier(
+        smoothedFpsRef.current,
+        config.thresholds,
+        config.forcedQualityTier ?? null,
+      ),
       sampleCount: frameTimesRef.current.length,
       thresholds: config.thresholds,
     };
 
     setSnapshot((currentSnapshot) => {
       if (
-        currentSnapshot.frameCount === nextSnapshot.frameCount
-        && currentSnapshot.qualityTier === nextSnapshot.qualityTier
+        currentSnapshot.qualityTier === nextSnapshot.qualityTier
         && Math.abs(currentSnapshot.fps - nextSnapshot.fps) < 0.25
+        && currentSnapshot.sampleCount === nextSnapshot.sampleCount
       ) {
         return currentSnapshot;
       }
 
-      return nextSnapshot;
+      return {
+        ...nextSnapshot,
+        dpr: currentSnapshot.dpr,
+      };
     });
   });
 
@@ -211,7 +229,7 @@ export function FrameRateHud({
 }: {
   label?: string;
 }) {
-  const { fps, qualityTier, sampleCount } = useFrameRate();
+  const { dpr, fps, qualityTier, sampleCount } = useFrameRate();
   const badgeStyle = useMemo(() => ({
     ...FRAME_RATE_BADGE_STYLE,
     background: qualityTier === 'high'
@@ -230,6 +248,11 @@ export function FrameRateHud({
         {' '}
         {sampleCount > 0 ? Math.round(fps) : '--'}
       </span>
+      <span>
+        DPR
+        {' '}
+        {dpr.toFixed(2)}
+      </span>
     </div>
   );
 }
@@ -240,6 +263,10 @@ export function useFrameRate() {
 
 export function useFrameRateConfig() {
   return useContext(FrameRateConfigContext);
+}
+
+export function useFrameRateDispatch() {
+  return useContext(FrameRateDispatchContext);
 }
 
 export { DEFAULT_FRAME_RATE_THRESHOLDS, getFrameRateQualityTier };

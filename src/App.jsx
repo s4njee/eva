@@ -24,9 +24,17 @@ function getWrappedIndex(currentIndex, direction, total) {
   return (currentIndex + direction + total) % total;
 }
 
+function shouldShowQualitySwitcher() {
+  if (typeof window === 'undefined') return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.has('perf') || params.has('fps') || params.has('models');
+}
+
 export default function App() {
   const [sceneIndex, setSceneIndex] = useState(0);
   const [overlayOpen, setOverlayOpen] = useState(false);
+  const [modelQuality, setModelQuality] = useState('auto');
+  const showQualitySwitcher = shouldShowQualitySwitcher();
 
   const handleSceneSelect = (index) => {
     startTransition(() => {
@@ -63,19 +71,19 @@ export default function App() {
           <PlanesApp />
         </Suspense>
       } />
-      <Route path="*" element={<EvaApp sceneIndex={sceneIndex} overlayOpen={overlayOpen} setOverlayOpen={setOverlayOpen} handleSceneSelect={handleSceneSelect} activeScene={activeScene} />} />
+      <Route path="*" element={<EvaApp sceneIndex={sceneIndex} overlayOpen={overlayOpen} setOverlayOpen={setOverlayOpen} handleSceneSelect={handleSceneSelect} activeScene={activeScene} modelQuality={modelQuality} setModelQuality={setModelQuality} showQualitySwitcher={showQualitySwitcher} />} />
     </Routes>
   );
 }
 
-function EvaApp({ sceneIndex, overlayOpen, setOverlayOpen, handleSceneSelect, activeScene }) {
+function EvaApp({ sceneIndex, overlayOpen, setOverlayOpen, handleSceneSelect, activeScene, modelQuality, setModelQuality, showQualitySwitcher }) {
   const ActiveSceneComponent = activeScene.Component;
   return (
     <main className="eva-app">
       {/* Render the active scene full-screen and keep the shell around it minimal. */}
       <div className="eva-scene">
         <Suspense fallback={<div className="eva-loading">loading scene...</div>}>
-          <ActiveSceneComponent />
+          <ActiveSceneComponent modelQuality={modelQuality} />
         </Suspense>
       </div>
 
@@ -107,6 +115,24 @@ function EvaApp({ sceneIndex, overlayOpen, setOverlayOpen, handleSceneSelect, ac
             </button>
           ))}
         </div>
+
+        {showQualitySwitcher && (
+          <div className="eva-quality-switcher">
+            <p className="eva-hint">Model Quality</p>
+            <div className="eva-scene-tabs">
+              {['auto', 'high', 'medium', 'low'].map(tier => (
+                <button
+                  key={tier}
+                  type="button"
+                  className={`eva-scene-tab ${modelQuality === tier ? 'is-active' : ''}`}
+                  onClick={() => setModelQuality(tier)}
+                >
+                  {tier}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

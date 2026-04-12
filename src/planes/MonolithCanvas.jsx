@@ -484,7 +484,7 @@ function MonolithScene() {
   const switchLightingMode = (mode) => {
     stateRef.current.lightingMode = mode;
     if (lightingRigRef.current) {
-      lightingRigRef.current.particles.visible = mode === LIGHTING_MODE_PARTICLES;
+      lightingRigRef.current.setParticleLightingEnabled(mode === LIGHTING_MODE_PARTICLES);
       if (mode !== LIGHTING_MODE_PARTICLES) lightingRigRef.current.clearParticleGlow();
     }
     guiParamsRef.current.lightingMode = getLightingModeLabel(mode);
@@ -769,12 +769,12 @@ function MonolithScene() {
 }
 
 export default function MonolithCanvas() {
-  const dpr = useMemo(() => [1, Math.min(window.devicePixelRatio, 2)], []);
+  const dpr = useMemo(() => [0.75, Math.min(window.devicePixelRatio, 1.5)], []);
 
   return (
     <SafeCanvas
       dpr={dpr}
-      rendererOptions={{ antialias: true, alpha: true }}
+      rendererOptions={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
       sceneLabel="Planes"
     >
       <Suspense fallback={null}>
