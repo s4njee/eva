@@ -9,6 +9,9 @@ Matrix is TypeScript and the clearest "active implementation" note lives in the 
 - `visualizations/matrix/src/text-rain/MatrixEffects.tsx`
 - `visualizations/matrix/src/text-rain/matrix-effects-config.ts`
 - `visualizations/matrix/src/text-rain/MatrixRain.tsx`
+- `visualizations/matrix/src/text-rain/MatrixRainShader.tsx`
+- `visualizations/matrix/src/text-rain/matrix-atlas.ts`
+- `visualizations/matrix/src/text-rain/matrix-rain-shader.glsl.ts`
 
 ## Active Implementation
 
@@ -18,6 +21,7 @@ Important detail:
 - the active scene is the `text-rain` implementation, and the old top-level Matrix renderer has been removed
 - the active `text-rain` path now simulates rain state in flat typed arrays and feeds a single atlas-backed instanced mesh
 - only the active column prefix is drawn and uploaded each frame; inactive columns stay outside the current draw/upload range
+- the experimental Win 5 renderer is available with `?engine=shader`; it uses one instanced batch of shader columns plus a tiny per-column state texture, while `?engine=instanced` keeps the 3D instanced reference path
 
 ## Current Hotkeys
 
@@ -32,6 +36,17 @@ Important detail:
 - `n`: toggle thermal vision
 - `ArrowLeft`: reduce active rain columns
 - `ArrowRight`: increase active rain columns
+
+## Engine Flags
+
+- `?engine=instanced`: atlas-backed 3D instanced glyph renderer
+- `?engine=shader`: experimental fullscreen fragment-shader renderer for Win 5 performance testing
+- `?perf=1`: forces the performance harness tier and emits JSON samples
+
+The shader engine renders vertical rain strips spread through 3D space so
+`OrbitControls` can still move the camera. It is the default when no engine is
+specified. Palette cycling, post-processing, space-bar rain boost, and
+arrow-key density changes should continue to work.
 
 ## Matrix-Specific Cautions
 
