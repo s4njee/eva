@@ -64,6 +64,7 @@ export interface SharedEffectStackProps {
   hueSatEnabled?: boolean;
   pixelMosaicEnabled?: boolean;
   saturation?: number;
+  scanlineAlwaysOn?: boolean;
   scanlineDensity?: number;
   scanlineEnabled?: boolean;
   scanlineOpacity?: number;
@@ -102,6 +103,7 @@ export default function SharedEffectStack({
   hueSatEnabled = false,
   pixelMosaicEnabled = false,
   saturation = 0,
+  scanlineAlwaysOn = false,
   scanlineDensity = 4,
   scanlineEnabled = true,
   scanlineOpacity = 1,
@@ -119,7 +121,7 @@ export default function SharedEffectStack({
   const effectiveBloomRadius = Math.min(bloomRadius, bloomRadiusLimit);
   const effectiveBloomThreshold = Math.max(bloomThreshold, 0.35);
   const effectiveBloomSmoothing = Math.min(bloomSmoothing, 0.18);
-  const effectiveBloomEnabled = bloomEnabled;
+  const effectiveBloomEnabled = bloomEnabled && qualityTier === 'high';
   const effectiveScanlineEnabled = scanlineEnabled;
   const effectiveChromaticEnabled = chromaticAberrationEnabled;
   const barrelBlurActive = cinematicEnabled && barrelBlurEnabled;
@@ -127,7 +129,7 @@ export default function SharedEffectStack({
   const glitchActive = glitchEnabled;
   const hueSatActive = hueSatEnabled || hueCycleEnabled;
   const pixelMosaicActive = pixelMosaicEnabled;
-  const scanlineActive = (cinematicEnabled || databendEnabled) && effectiveScanlineEnabled;
+  const scanlineActive = (scanlineAlwaysOn || cinematicEnabled || databendEnabled) && effectiveScanlineEnabled;
   const screenXrayActive = screenXrayEnabled;
   const thermalVisionActive = thermalVisionEnabled;
 
