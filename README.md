@@ -33,7 +33,7 @@ Implications:
 - `visualizations/matrix/`: standalone Matrix package and source.
 - `visualizations/atom/`: standalone Atom package and source.
 - `public/`: root runtime assets.
-- `deploy.sh`: root production deploy script.
+- `deploy-pages.sh`: Cloudflare Pages deployment script.
 
 ## Special Effects Map
 
@@ -194,32 +194,20 @@ Atom is a React Three Fiber scene with a large molecule catalog. The app shell i
 
 ## Deployment
 
-Root homepage deploy:
-
-Default production path:
+Root homepage deploy to Cloudflare Pages:
 
 ```bash
-git push origin main
+./deploy-pages.sh
 ```
 
-That triggers the GitHub Actions workflow in `.github/workflows/deploy-s3.yml`, which
-builds the root app, syncs `dist/` to `s3://s8njee.com/`, and invalidates CloudFront.
-
-Manual fallback:
+Or manually with wrangler:
 
 ```bash
-./deploy.sh
+npm run build:root
+npx wrangler pages deploy dist --project-name eva --branch main
 ```
 
-Monolith standalone deploy:
-
-```bash
-visualizations/monolith/deploy.sh
-```
-
-Important: that Monolith deploy writes to the homepage bucket and can replace the main site shell. Only run it if you intentionally want the standalone Monolith experience to become the homepage.
-
-Matrix deploy:
+Matrix standalone deploy:
 
 ```bash
 visualizations/matrix/deploy.sh

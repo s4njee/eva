@@ -21,7 +21,7 @@ eva/                          ← root app (s8njee.com homepage)
 │   ├── matrix/               ← Matrix rain scene, TypeScript (Git submodule)
 │   └── atom/                 ← molecular visualization scene (Git submodule)
 ├── docs/                     ← detailed per-topic documentation
-├── .github/workflows/        ← CI/CD (deploy-s3.yml triggers on push to main)
+├── deploy-pages.sh           ← Cloudflare Pages deployment script
 └── ToDo.md                   ← consolidated project roadmap
 ```
 
@@ -41,7 +41,7 @@ When the user mentions one of these, open the matching doc:
 | **Atom** | [docs/atom.md](docs/atom.md) | `visualizations/atom/src/App.jsx` |
 | **Planes** | — | `src/planes/App.jsx` |
 | **Effects / post-processing** | [docs/special-effects.md](docs/special-effects.md) | `src/shared/special-effects/` |
-| **Deploy / assets** | [docs/assets-and-deploy.md](docs/assets-and-deploy.md) | `.github/workflows/deploy-s3.yml` |
+| **Deploy / assets** | [docs/assets-and-deploy.md](docs/assets-and-deploy.md) | `deploy-pages.sh` |
 | **Architecture / submodules** | [docs/repo-workflow.md](docs/repo-workflow.md) | — |
 
 ---
@@ -84,17 +84,12 @@ npm run check:matrix-visible    # from repo root — opens Chromium, verifies gr
 
 ### Deploying
 
-Root site (s8njee.com):
-- **Automatic:** push or merge to `main` → GitHub Actions runs `.github/workflows/deploy-s3.yml`
-- **Manual fallback:** `./deploy.sh` (requires AWS credentials in environment)
-- **Cloudflare Pages branch:** push to `cloudflare` → GitHub Actions runs `.github/workflows/deploy-cloudflare-pages.yml`
-- **Cloudflare manual fallback:** `./deploy-pages.sh` (requires `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `CLOUDFLARE_PAGES_PROJECT_NAME`)
+Root site (s8njee.com) to Cloudflare Pages:
+- **Manual:** `./deploy-pages.sh` (requires `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `CLOUDFLARE_PAGES_PROJECT_NAME`)
+- **Or with wrangler:** `npx wrangler pages deploy dist --project-name eva --branch main`
 
 Matrix standalone (rain.s8njee.com):
 - `visualizations/matrix/deploy.sh`
-
-> Do not run `visualizations/monolith/deploy.sh` unless the user explicitly wants the standalone
-> Monolith shell to replace the homepage. It writes to the same S3 bucket as the root site.
 
 ---
 
