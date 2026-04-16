@@ -1,4 +1,4 @@
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import {
   createContext,
   type Dispatch,
@@ -145,6 +145,7 @@ export function FrameRateMonitorProvider({
 export function FrameRateMonitorBridge() {
   const config = useContext(FrameRateConfigContext);
   const setSnapshot = useContext(FrameRateDispatchContext);
+  const { gl } = useThree();
   const frameTimesRef = useRef<number[]>([]);
   const totalFrameTimeRef = useRef(0);
   const frameCountRef = useRef(0);
@@ -193,7 +194,7 @@ export function FrameRateMonitorBridge() {
     lastPublishTimeRef.current = now;
 
     const nextSnapshot: FrameRateSnapshot = {
-      dpr: DEFAULT_FRAME_RATE_SNAPSHOT.dpr,
+      dpr: gl.getPixelRatio(),
       fps: smoothedFpsRef.current,
       frameCount: frameCountRef.current,
       qualityTier: getFrameRateQualityTier(
@@ -210,13 +211,13 @@ export function FrameRateMonitorBridge() {
         currentSnapshot.qualityTier === nextSnapshot.qualityTier
         && Math.abs(currentSnapshot.fps - nextSnapshot.fps) < 0.25
         && currentSnapshot.sampleCount === nextSnapshot.sampleCount
+        && Math.abs(currentSnapshot.dpr - nextSnapshot.dpr) < 0.01
       ) {
         return currentSnapshot;
       }
 
       return {
         ...nextSnapshot,
-        dpr: currentSnapshot.dpr,
       };
     });
   });

@@ -73,6 +73,7 @@ const DPR_EPSILON = 0.01;
 
 type SafeCanvasProps = Omit<CanvasProps, 'fallback' | 'gl'> & {
   fallback?: ReactNode;
+  allowPerformanceCaveat?: boolean;
   frameRateConfig?: Partial<FrameRateMonitorConfig>;
   rendererOptions?: WebGLRendererParameters;
   sceneLabel?: string;
@@ -244,35 +245,37 @@ function probeRendererOptions(options: WebGLRendererParameters): ProbeState {
 
   let lastError = new Error('WebGL 2 is unavailable in this browser.');
 
-  for (const candidate of getRendererCandidates({
-    ...options,
-    failIfMajorPerformanceCaveat: true,
-  })) {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('webgl2', {
-      alpha: candidate.alpha,
-      antialias: candidate.antialias,
-      depth: candidate.depth,
-      failIfMajorPerformanceCaveat: candidate.failIfMajorPerformanceCaveat,
-      powerPreference: candidate.powerPreference,
-      premultipliedAlpha: candidate.premultipliedAlpha,
-      preserveDrawingBuffer: candidate.preserveDrawingBuffer,
-      stencil: candidate.stencil,
-    });
+  if (options.failIfMajorPerformanceCaveat !== false) {
+    for (const candidate of getRendererCandidates({
+      ...options,
+      failIfMajorPerformanceCaveat: true,
+    })) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('webgl2', {
+        alpha: candidate.alpha,
+        antialias: candidate.antialias,
+        depth: candidate.depth,
+        failIfMajorPerformanceCaveat: candidate.failIfMajorPerformanceCaveat,
+        powerPreference: candidate.powerPreference,
+        premultipliedAlpha: candidate.premultipliedAlpha,
+        preserveDrawingBuffer: candidate.preserveDrawingBuffer,
+        stencil: candidate.stencil,
+      });
 
-    if (context) {
-      const supportedProbe = {
-        status: 'ready',
-        options: stripPerformanceCaveatFlag(candidate),
-        performanceCaveat: false,
-      } as const;
-      probeCache.set(probeKey, supportedProbe);
-      return supportedProbe;
+      if (context) {
+        const supportedProbe = {
+          status: 'ready',
+          options: stripPerformanceCaveatFlag(candidate),
+          performanceCaveat: false,
+        } as const;
+        probeCache.set(probeKey, supportedProbe);
+        return supportedProbe;
+      }
+
+      lastError = new Error(
+        `WebGL 2 context creation failed for ${JSON.stringify(candidate)}.`,
+      );
     }
-
-    lastError = new Error(
-      `WebGL 2 context creation failed for ${JSON.stringify(candidate)}.`,
-    );
   }
 
   for (const candidate of getRendererCandidates(options)) {
@@ -292,7 +295,7 @@ function probeRendererOptions(options: WebGLRendererParameters): ProbeState {
       const supportedProbe = {
         status: 'ready',
         options: candidate,
-        performanceCaveat: true,
+        performanceCaveat: options.failIfMajorPerformanceCaveat !== false,
       } as const;
       probeCache.set(probeKey, supportedProbe);
       return supportedProbe;
@@ -460,6 +463,7 @@ export default function SafeCanvas({
   children,
   dpr: requestedDpr,
   fallback,
+  allowPerformanceCaveat = false,
   frameRateConfig,
   rendererOptions,
   sceneLabel = 'Scene',
@@ -473,9 +477,17 @@ export default function SafeCanvas({
     }),
     [rendererOptions],
   );
+  const probeOptions = useMemo(
+    () => (
+      allowPerformanceCaveat
+        ? { ...requestedOptions, failIfMajorPerformanceCaveat: false }
+        : requestedOptions
+    ),
+    [allowPerformanceCaveat, requestedOptions],
+  );
   const probeKey = useMemo(
-    () => getRendererProbeKey(requestedOptions),
-    [requestedOptions],
+    () => getRendererProbeKey(probeOptions),
+    [probeOptions],
   );
   const [probe, setProbe] = useState<ProbeState>(() => {
     if (typeof document === 'undefined') {
@@ -486,8 +498,8 @@ export default function SafeCanvas({
   });
 
   useEffect(() => {
-    setProbe(probeRendererOptions(requestedOptions));
-  }, [probeKey, requestedOptions]);
+    setProbe(probeRendererOptions(probeOptions));
+  }, [probeKey, probeOptions]);
 
   const lowEndRenderer = probe.status === 'ready' && probe.performanceCaveat;
   const requestedDprKey = getDprPropKey(requestedDpr);
