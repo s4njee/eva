@@ -34,6 +34,7 @@ Important detail:
 - `b`: pixel mosaic toggle
 - `n`: thermal vision toggle
 - `x`: x-ray toggle
+- `p`: pharmacophore highlight toggle
 
 ## Atom-Specific Cautions
 
@@ -44,6 +45,7 @@ Important detail:
 - the default Atom lighting profile now follows the lighter Empagliflozin-style bond pass: bond electron point lights stay off until cinematic mode is enabled
 - the schema layer is performance-safe by design: keep schema objects serializable/static, then compile them once into render-friendly buffers and defs
 - x-ray behavior is partly material-level and partly post-processing-level; check both layers before assuming a bug is in only one place
+- pharmacophore highlighting is suppressed while x-ray mode is active because x-ray replaces molecule materials
 - Atom keeps bloom off by default, then couples bloom plus the richer reflective material pass to the shared cinematic `4` hotkey for quick A/B testing
 
 For post-processing and shared effect rules, start with [docs/special-effects.md](special-effects.md).
