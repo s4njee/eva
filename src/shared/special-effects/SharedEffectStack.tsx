@@ -112,7 +112,7 @@ export default function SharedEffectStack({
   thermalVisionEnabled = false,
 }: SharedEffectStackProps) {
   const { qualityTier } = useFrameRate();
-  const composerEnabled = qualityTier === 'high';
+  const composerEnabled = qualityTier === 'high' || chromaticAberrationEnabled || bloomEnabled;
   const composerResolutionScale = qualityTier === 'low' ? 0.5 : 1;
   const bloomResolutionScale = qualityTier === 'low' ? 0.25 : 0.35;
   const bloomIntensityLimit = qualityTier === 'low' ? 0.45 : 0.8;
@@ -121,7 +121,7 @@ export default function SharedEffectStack({
   const effectiveBloomRadius = Math.min(bloomRadius, bloomRadiusLimit);
   const effectiveBloomThreshold = Math.max(bloomThreshold, 0.35);
   const effectiveBloomSmoothing = Math.min(bloomSmoothing, 0.18);
-  const effectiveBloomEnabled = bloomEnabled && qualityTier === 'high';
+  const effectiveBloomEnabled = bloomEnabled;
   const effectiveScanlineEnabled = scanlineEnabled;
   const effectiveChromaticEnabled = chromaticAberrationEnabled;
   const barrelBlurActive = cinematicEnabled && barrelBlurEnabled;
@@ -220,7 +220,7 @@ export default function SharedEffectStack({
 
   // Keep the effect stack readable: each enabled flag contributes a single pass
   // or effect instance here instead of spreading pass wiring across scene files.
-  if (cinematicEnabled && effectiveBloomEnabled) {
+  if (effectiveBloomEnabled) {
     composerChildren.push(
       <Bloom
         key="bloom"

@@ -1,6 +1,10 @@
 import { Canvas, type CanvasProps, useThree } from '@react-three/fiber';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { WebGLRenderer, type WebGLRendererParameters } from 'three';
+
+function isWebGPUSupported(): boolean {
+  return typeof navigator !== 'undefined' && 'gpu' in navigator;
+}
 import {
   FrameRateHud,
   FrameRateMonitorBridge,
@@ -78,6 +82,8 @@ type SafeCanvasProps = Omit<CanvasProps, 'fallback' | 'gl'> & {
   rendererOptions?: WebGLRendererParameters;
   sceneLabel?: string;
   showFrameRateOverlay?: boolean;
+  /** Opt in to the WebGPU renderer (requires ?webgpu=1 or explicit prop). Falls back to WebGL silently when the browser lacks WebGPU. */
+  webgpuEnabled?: boolean;
 };
 
 type ProbeState =
@@ -468,6 +474,7 @@ export default function SafeCanvas({
   rendererOptions,
   sceneLabel = 'Scene',
   showFrameRateOverlay,
+  webgpuEnabled = false,
   ...props
 }: SafeCanvasProps) {
   const requestedOptions = useMemo(
@@ -490,16 +497,15 @@ export default function SafeCanvas({
     [probeOptions],
   );
   const [probe, setProbe] = useState<ProbeState>(() => {
-    if (typeof document === 'undefined') {
-      return { status: 'pending' };
-    }
-
+    if (webgpuEnabled && isWebGPUSupported()) return { status: 'pending' };
+    if (typeof document === 'undefined') return { status: 'pending' };
     return probeCache.get(probeKey) ?? { status: 'pending' };
   });
 
   useEffect(() => {
+    if (webgpuEnabled && isWebGPUSupported()) return;
     setProbe(probeRendererOptions(probeOptions));
-  }, [probeKey, probeOptions]);
+  }, [probeKey, probeOptions, webgpuEnabled]);
 
   const lowEndRenderer = probe.status === 'ready' && probe.performanceCaveat;
   const requestedDprKey = getDprPropKey(requestedDpr);
@@ -523,6 +529,37 @@ export default function SafeCanvas({
   useEffect(() => {
     setAdaptiveDpr(initialAdaptiveDpr);
   }, [adaptiveDprKey, initialAdaptiveDpr]);
+
+  if (webgpuEnabled && isWebGPUSupported()) {
+    return (
+      <div style={SHELL_STYLE}>
+        <FrameRateMonitorProvider config={effectiveFrameRateConfig}>
+          <Canvas
+            {...props}
+            fallback={fallback}
+            frameloop={activeFrameloop}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            gl={(async (defaultProps: any) => {
+              const { WebGPURenderer } = await import('three/webgpu');
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const renderer = new (WebGPURenderer as any)({
+                ...defaultProps,
+                antialias: true,
+                powerPreference: 'high-performance',
+              });
+              await renderer.init();
+              return renderer;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            }) as any}
+          >
+            <FrameRateMonitorBridge />
+            {children}
+          </Canvas>
+          {shouldShowOverlay ? <FrameRateHud label={sceneLabel} /> : null}
+        </FrameRateMonitorProvider>
+      </div>
+    );
+  }
 
   if (probe.status === 'unsupported') {
     return (
