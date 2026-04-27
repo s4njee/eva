@@ -19,8 +19,8 @@ Browser support: WebGPU is available in Chrome 113+ and Edge 113+. Safari 17 sup
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 1 | WebGPURenderer feature flag — verify scene renders | **Done** |
-| 2 | Move SimulationState into GPU storage buffers | Pending |
-| 3 | Compute shader replaces CPU simulation loop | Pending |
+| 2 | Move SimulationState into GPU storage buffers | **Done** |
+| 3 | Compute shader replaces CPU simulation loop | **Done** |
 | 4 | Vertex shader reads storage buffers directly | Pending |
 | 5 | Post-processing re-enabled under WebGPU | Pending |
 
@@ -68,7 +68,49 @@ http://localhost:5173/?webgpu=1
 
 ---
 
-## Phase 2 — Move SimulationState into GPU storage buffers
+## Phases 2 & 3 — GPU storage buffers + compute shader (combined)
+
+**Status: Done**
+
+Phases 2 and 3 were implemented together in `MatrixRainCompute.tsx`, a new engine activated with `?engine=webgpu`.
+
+### What was built
+
+**`visualizations/matrix/src/text-rain/MatrixRainCompute.tsx`**
+- New component: same rendering approach as `MatrixRainShader` (instanced column strips + fragment-shader glyph lookup from a state texture).
+- Simulation state (`vec4<f32>` per column per stream: head, trail, phase, speed) lives in a `GPUBuffer` with `STORAGE | COPY_DST` usage.
+- A WGSL compute shader (`@workgroup_size(64)`, one thread per column) runs the full simulation: head advancement, reset logic, boost stream seeding. Uses GPU-side `hash21` for RNG.
+- Per-frame: `dispatchCompute()` submits a compute pass, then `readStateBack()` async-copies the state buffer back to CPU for the `DataTexture` bridge (the fragment shader still reads from a `DataTexture`).
+- `uploadedBytesPerFrame` reports 0 — the simulation is GPU-resident.
+
+**`visualizations/matrix/src/text-rain/App.tsx`**
+- `MatrixRainEngine` type extended: `'instanced' | 'shader' | 'webgpu'`.
+- `?engine=webgpu` selects the compute engine.
+- Engine selection JSX updated to three-way branch.
+
+### How to test
+
+```bash
+npm --prefix visualizations/matrix run dev
+# Open in Chrome 113+:
+http://localhost:5173/?engine=webgpu&webgpu=1
+
+# Expected: rain renders identically to ?engine=shader
+# Expected: uploadedBytesPerFrame = 0 in ?perf=1 stats
+# Expected: CPU useFrame body is minimal (dispatch + readback, no JS loop)
+```
+
+### Current limitations (Phase 4 will address)
+
+- Async readback via `mapAsync` introduces a one-frame latency on the state texture update. Visually imperceptible at 60fps.
+- The fragment shader still reads from a `DataTexture` rather than a storage buffer directly. Phase 4 will eliminate the readback entirely by having the vertex/fragment shader read the storage buffer.
+- `resetAfter` is derived from a stable hash in the compute shader rather than stored separately, which gives slightly different reset timing than the CPU path.
+
+---
+
+## Phase 2 (original design notes) — Move SimulationState into GPU storage buffers
+
+The notes below were the original Phase 2 design. The actual implementation combined Phases 2 and 3 into `MatrixRainCompute.tsx`.
 
 **Goal:** Allocate the simulation state (`acc`, `headY`, `trail`, `speed`, `phase`, `resetAfter`, `cellOn`, `cellAge`, `cellChar`) as WebGPU `GPUBuffer`s with `STORAGE | COPY_DST` usage. Also allocate output buffers for `uv`, `col`, `opa` with `STORAGE | VERTEX` usage. CPU still writes initial values; per-frame updates still happen on CPU. The render path reads from these buffers instead of `InstancedBufferAttribute`s.
 

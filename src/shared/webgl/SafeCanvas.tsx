@@ -546,6 +546,7 @@ export default function SafeCanvas({
                 ...defaultProps,
                 antialias: true,
                 powerPreference: 'high-performance',
+                compatibilityMode: true,
               });
               await renderer.init();
               return renderer;

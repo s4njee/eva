@@ -41,6 +41,7 @@ Important detail:
 
 - `?engine=instanced`: atlas-backed 3D instanced glyph renderer
 - `?engine=shader`: experimental fullscreen fragment-shader renderer for Win 5 performance testing
+- `?engine=webgpu`: WebGPU compute-backed simulation (requires Chrome 113+ with `?webgpu=1`)
 - `?perf=1`: forces the performance harness tier and emits JSON samples
 
 The shader engine renders vertical rain strips spread through 3D space so
