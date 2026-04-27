@@ -27,14 +27,19 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Verify Cloudflare Pages config
         run: |
@@ -43,7 +48,7 @@ jobs:
           test -n "$CLOUDFLARE_PAGES_PROJECT_NAME"
 
       - name: Build site
-        run: npm run build:root
+        run: pnpm run build:root
 
       - name: Remove .DS_Store from build output
         run: find dist -name '.DS_Store' -delete

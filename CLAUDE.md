@@ -21,7 +21,7 @@ eva/                          ← root app (s8njee.com homepage)
 │   ├── matrix/               ← Matrix rain scene, TypeScript (Git submodule)
 │   └── atom/                 ← molecular visualization scene (Git submodule)
 ├── docs/                     ← detailed per-topic documentation
-├── .github/workflows/        ← CI/CD (deploy-s3.yml triggers on push to main)
+├── .github/workflows/        ← CI/CD (deploy-cloudflare-pages.yml triggers on push to main)
 └── ToDo.md                   ← consolidated project roadmap
 ```
 
@@ -85,10 +85,10 @@ npm run check:matrix-visible    # from repo root — opens Chromium, verifies gr
 ### Deploying
 
 Root site (s8njee.com):
-- **Automatic:** push or merge to `main` → GitHub Actions runs `.github/workflows/deploy-s3.yml`
-- **Manual fallback:** `./deploy.sh` (requires AWS credentials in environment)
-- **Cloudflare Pages branch:** push to `cloudflare` → GitHub Actions runs `.github/workflows/deploy-cloudflare-pages.yml`
-- **Cloudflare manual fallback:** `./deploy-pages.sh` (requires `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `CLOUDFLARE_PAGES_PROJECT_NAME`)
+
+- **Automatic:** push or merge to `main` → GitHub Actions runs `.github/workflows/deploy-cloudflare-pages.yml`
+- **Manual fallback:** `./deploy-pages.sh` (requires `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `CLOUDFLARE_PAGES_PROJECT_NAME`)
+- **S3 deploy (disabled):** `./deploy.sh` — only via `workflow_dispatch` on `deploy-s3.yml`, not triggered by push
 
 Matrix standalone (rain.s8njee.com):
 - `visualizations/matrix/deploy.sh`
