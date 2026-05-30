@@ -1,0 +1,9 @@
+/* Host element for the vanilla-Three.js bocchi scene. The scene appends its own
+   <canvas> here and sizes it to the viewport, so this just needs to fill the
+   scene slot and clip anything that overflows. */
+.bocchi-app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #111;
+}

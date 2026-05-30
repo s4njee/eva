@@ -1,55 +1,63 @@
 # Atom
 
-Atom is more monolithic than Monolith, but the app shell and scene composition have been split more cleanly than before.
+The **Atom** scene is the `atom2` project: a stylized, vanilla **Three.js** PubChem molecule viewer.
+The `visualizations/atom` submodule tracks `git@github.com:s4njee/atom2.git` (it previously tracked the
+older React / R3F `atom.git` viewer — that is gone from this app).
+
+Unlike Monolith/Matrix, atom2 is **not** React. Its entry is `src/main.js → startApp()` (in
+`src/app.js`): it drives the DOM directly via `document.getElementById(...)`, expects a specific HTML
+scaffold, and returns a teardown function. The eva shell renders React, so a thin wrapper bridges the two.
 
 ## Key Files
 
-- `visualizations/atom/src/App.jsx`
-- `visualizations/atom/src/atom/scene.jsx`
-- `visualizations/atom/src/atom/core.jsx`
-- `visualizations/atom/src/atom/gui.jsx`
-- `visualizations/atom/src/atom/elements.json`
-- `visualizations/atom/src/atom/molecules/helpers.jsx`
-- `visualizations/atom/src/atom/schema/`
-- `visualizations/atom/src/styles.css`
+- `src/atom/AtomCanvas.jsx` — **root-side React wrapper** that owns the integration. Renders the DOM
+  scaffold atom2 expects (mirrors `visualizations/atom/index.html`) and calls `startApp()` on mount /
+  the returned teardown on unmount. This is the file `src/App.jsx` lazy-imports for the Atom scene.
+- `visualizations/atom/src/app.js` — atom2 entry; `startApp()` wires UI + scene and returns teardown.
+- `visualizations/atom/src/scene/viewer.js` — Three.js renderer/scene/controls/composer; `dispose()`.
+- `visualizations/atom/src/styles/registry.js` — visual style registry (`STYLE_LIST`).
+- `visualizations/atom/src/pubchem/client.js` — PubChem fetch (molecules, properties, similar, search).
+- `visualizations/atom/src/styles.css` — atom2 layout + cosmetics, scoped under `.atom2-app`.
 
-## Current Structure
+## Integration Contract (how atom2 lives in the React shell)
 
-Important detail:
+- **Scaffold:** `AtomCanvas.jsx` renders `<div className="atom2-app">` containing the ids atom2 looks up:
+  `#search-container`, `#style-container`, `#measurements-container`, `#random-container` (in `#topbar`);
+  `#groups-container`, `#sidebar-lists` (in `#sidebar`); `#canvas-container`; `#status`. The wrapper does
+  **not** set `id="app"` — that id is the eva React mount.
+- **Lifecycle / teardown:** `startApp()` returns a teardown function. The wrapper calls it on unmount so
+  the RAF loop, the `window` `keydown`/`resize` listeners, the WebGL context, and molecule meshes are all
+  released. Verified: switching scenes away and back leaves exactly one `<canvas>` (no leak).
+- **CSS scoping:** atom2's old global `#app { display:grid; … }` rule is now `.atom2-app`, and the body
+  cosmetics (background/font/color) were moved onto `.atom2-app`, so embedding does not restyle the eva
+  homepage. Only the structural `html, body { margin/height/overflow }` rule stays global (harmless — the
+  root already sets those). The standalone `visualizations/atom/index.html` carries `class="atom2-app"` so
+  the standalone build keeps its layout.
 
-- `visualizations/atom/src/App.jsx` is now mostly the app shell and shared-effect state owner
-- scene composition lives in `visualizations/atom/src/atom/scene.jsx`
-- x-ray shader mutation lives in `visualizations/atom/src/atom/core.jsx`
-- shared element color/scale/tooltip metadata lives in `visualizations/atom/src/atom/elements.json`
-- PubChem link parsing plus the serializable/compiled molecule schema utilities live in `visualizations/atom/src/atom/schema/`
-- OrbitControls are enabled in-scene, and molecule idle animation now pauses while the user is orbiting/zooming before resuming after a short idle delay
+## Hotkeys
 
-## Current Hotkeys
+- `[` / `]` — cycle to the previous / next visual style (the style dropdown in the topbar also works).
+- `ArrowUp` / `ArrowDown` are **owned by the eva shell** for switching scenes. atom2 deliberately does
+  **not** bind them (it used to); the style-cycling keys were remapped to `[` / `]` to avoid the conflict.
 
-- `g`: toggle the GUI
-- `4`: toggle Atom cinematic mode and bloom together
-- `z`: toggle databend mode
-- `c`: chromatic aberration toggle
-- `v`: hue cycle toggle
-- `b`: pixel mosaic toggle
-- `n`: thermal vision toggle
-- `x`: x-ray toggle
-- `p`: pharmacophore highlight toggle
+## Cautions
 
-## Atom-Specific Cautions
+- atom2 has **no local assets** — it is procedural geometry + live PubChem network calls. Nothing needs to
+  be mirrored into the root `public/` tree.
+- atom2 resolves `three` and `three/addons/*` from the **root** node_modules (three 0.183) when imported by
+  the homepage. Its environment styles already use the modern `pmrem.fromScene(new RoomEnvironment())` API,
+  which is compatible. Watch for three API drift if styles are added that use older signatures.
+- Keep the wrapper scaffold ids in sync with the `getElementById` calls in `visualizations/atom/src/app.js`.
+- If `startApp()` gains new global listeners/timers/GPU resources, extend the teardown it returns and (if
+  needed) `viewer.dispose()` so the scene stays leak-free across mount/unmount.
 
-- prefer surgical edits over broad refactors
-- behavior is split across `App.jsx`, `atom/scene.jsx`, `atom/core.jsx`, and `atom/gui.jsx`, so keep those in sync when changing effect behavior
-- shared atom instancing and the lower-allocation trail buffers live in `atom/molecules/helpers.jsx` and `atom/core.jsx`
-- bond and pi-bond electron trails now use a shader-driven GPU point trail path in `atom/core.jsx`; the sprite heads still provide the visible focal glow/light anchor
-- the default Atom lighting profile now follows the lighter Empagliflozin-style bond pass: bond electron point lights stay off until cinematic mode is enabled
-- the schema layer is performance-safe by design: keep schema objects serializable/static, then compile them once into render-friendly buffers and defs
-- x-ray behavior is partly material-level and partly post-processing-level; check both layers before assuming a bug is in only one place
-- pharmacophore highlighting is suppressed while x-ray mode is active because x-ray replaces molecule materials
-- Atom keeps bloom off by default, then couples bloom plus the richer reflective material pass to the shared cinematic `4` hotkey for quick A/B testing
+## Standalone
 
-For post-processing and shared effect rules, start with [docs/special-effects.md](special-effects.md).
+```bash
+npm --prefix visualizations/atom run dev      # vite dev (uses visualizations/atom/index.html)
+npm --prefix visualizations/atom run build    # standalone build
+npm --prefix visualizations/atom run test     # vitest
+```
 
-## Standalone Config Note
-
-- `visualizations/atom/vite.config.js` uses `/` for local Vite dev, `'/atom/'` for production builds, and dedupes React plus the R3F stack so the root-shared effect code does not trip hook mismatches
+A passing standalone build does **not** prove the homepage build is fine — always run the root
+`npm run build` after touching atom2 source.

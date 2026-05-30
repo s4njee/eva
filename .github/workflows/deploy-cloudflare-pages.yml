@@ -49,6 +49,9 @@ jobs:
 
       - name: Build site
         run: pnpm run build:root
+        env:
+          # Inlined by Vite at build time for the Planes scene's Cesium Ion terrain.
+          VITE_CESIUM_ION_TOKEN: ${{ secrets.VITE_CESIUM_ION_TOKEN }}
 
       - name: Remove .DS_Store from build output
         run: find dist -name '.DS_Store' -delete

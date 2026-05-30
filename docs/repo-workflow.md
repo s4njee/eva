@@ -6,11 +6,13 @@ This doc covers the repository-wide rules that apply before you get into any sin
 
 This repository is the current homepage app for `s8njee.com`.
 
-The root app is a Vite + React shell that switches between three visualizations:
+The root app is a Vite + React shell that switches between five visualizations:
 
 - `Monolith`
 - `Matrix`
 - `Atom`
+- `Bocchi`
+- `Planes` (also reachable at the standalone `/planes` route)
 
 The important architectural detail is that the root app does not embed published builds from those visualizations. It imports their source code directly from the `visualizations/*` directories.
 
@@ -36,7 +38,12 @@ Visualization submodules:
 
 - `visualizations/monolith/`: large Three.js / React Three Fiber character showcase
 - `visualizations/matrix/`: Matrix rain scene, TypeScript
-- `visualizations/atom/`: molecular visualization scene
+- `visualizations/atom/`: the `atom2` submodule — a vanilla Three.js PubChem molecule viewer
+  (wrapped for the homepage by `src/atom/AtomCanvas.jsx`)
+- `visualizations/bocchi/`: vanilla Three.js GLB + starfield showcase
+  (wrapped for the homepage by `src/bocchi/BocchiCanvas.jsx`)
+- `visualizations/planes/`: Cesium-Ion-terrain flight visualization, R3F + maplibre
+  (imported directly as the Planes scene; needs `VITE_CESIUM_ION_TOKEN` — see [docs/planes.md](planes.md))
 
 Submodule reminder:
 
@@ -52,7 +59,15 @@ The root app is the canonical production entrypoint right now.
 
 - `../visualizations/monolith/src/MonolithCanvas.jsx`
 - `../visualizations/matrix/src/text-rain/App.tsx`
-- `../visualizations/atom/src/App.jsx`
+- `./atom/AtomCanvas.jsx` — a root-side React wrapper around the `atom2` submodule, which is
+  vanilla Three.js (not React) and so cannot be imported directly as a component. The wrapper
+  imports `../visualizations/atom/src/app.js` + `styles.css`. See [docs/atom.md](atom.md).
+- `./bocchi/BocchiCanvas.jsx` — likewise a root-side React wrapper around the `bocchi` submodule
+  (vanilla Three.js). It imports `start()` from `../visualizations/bocchi/src/scene.js`. See
+  [docs/bocchi.md](bocchi.md).
+- `../visualizations/planes/src/App.jsx` — the `planes` submodule is already React, so it is imported
+  directly (no wrapper). It pulls in Cesium-Ion terrain + maplibre and needs `VITE_CESIUM_ION_TOKEN`
+  and extra root deps / vite config. See [docs/planes.md](planes.md).
 
 Implications:
 
@@ -62,11 +77,13 @@ Implications:
 
 ## Git And Submodule Rules
 
-The three visualization folders are tracked as submodules:
+The visualization folders are tracked as submodules:
 
 - `visualizations/atom`
+- `visualizations/bocchi`
 - `visualizations/matrix`
 - `visualizations/monolith`
+- `visualizations/planes`
 
 Practical rules:
 

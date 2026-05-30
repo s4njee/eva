@@ -12,14 +12,17 @@ eva/                          ← root app (s8njee.com homepage)
 ├── src/
 │   ├── App.jsx               ← scene switcher and overlay
 │   ├── main.jsx              ← React entrypoint
-│   ├── planes/               ← planes scene (standalone route: /planes)
+│   ├── atom/                 ← React wrapper for the vanilla-JS atom2 submodule
+│   ├── bocchi/               ← React wrapper for the vanilla-JS bocchi submodule
 │   ├── shared/performance/   ← frame-rate monitor, adaptive quality, SafeCanvas
 │   └── style.css             ← root UI styles
 ├── public/                   ← runtime assets for the root site
 ├── visualizations/
 │   ├── monolith/             ← Three.js / R3F character showcase (Git submodule)
 │   ├── matrix/               ← Matrix rain scene, TypeScript (Git submodule)
-│   └── atom/                 ← molecular visualization scene (Git submodule)
+│   ├── atom/                 ← atom2: vanilla Three.js PubChem molecule viewer (Git submodule)
+│   ├── bocchi/               ← vanilla Three.js GLB + starfield showcase (Git submodule)
+│   └── planes/               ← Cesium-terrain flight viz, R3F (Git submodule; needs VITE_CESIUM_ION_TOKEN)
 ├── docs/                     ← detailed per-topic documentation
 ├── .github/workflows/        ← CI/CD (deploy-cloudflare-pages.yml triggers on push to main)
 └── ToDo.md                   ← consolidated project roadmap
@@ -38,8 +41,9 @@ When the user mentions one of these, open the matching doc:
 |-------|-----|----------|
 | **Monolith** | [docs/monolith.md](docs/monolith.md) | `visualizations/monolith/src/MonolithCanvas.jsx` |
 | **Matrix** | [docs/matrix.md](docs/matrix.md) | `visualizations/matrix/src/text-rain/App.tsx` |
-| **Atom** | [docs/atom.md](docs/atom.md) | `visualizations/atom/src/App.jsx` |
-| **Planes** | — | `src/planes/App.jsx` |
+| **Atom** | [docs/atom.md](docs/atom.md) | `src/atom/AtomCanvas.jsx` (wraps the vanilla-JS `atom2` submodule) |
+| **Bocchi** | [docs/bocchi.md](docs/bocchi.md) | `src/bocchi/BocchiCanvas.jsx` (wraps the vanilla-JS `bocchi` submodule) |
+| **Planes** | [docs/planes.md](docs/planes.md) | `visualizations/planes/src/App.jsx` (submodule; **Cesium Ion terrain** — needs `VITE_CESIUM_ION_TOKEN`; switcher scene **and** `/planes` route) |
 | **Effects / post-processing** | [docs/special-effects.md](docs/special-effects.md) | `src/shared/special-effects/` |
 | **Deploy / assets** | [docs/assets-and-deploy.md](docs/assets-and-deploy.md) | `.github/workflows/deploy-s3.yml` |
 | **Architecture / submodules** | [docs/repo-workflow.md](docs/repo-workflow.md) | — |
@@ -55,12 +59,18 @@ npm install          # install root deps
 npm run dev          # start root dev server
 ```
 
+> The **Planes** scene needs a Cesium Ion token in `eva/.env.local`
+> (`VITE_CESIUM_ION_TOKEN=…`). `*.local` is gitignored, so it is never committed.
+> Production (Cloudflare Pages) needs the same var set in the Pages build env.
+
 To run a visualization standalone:
 
 ```bash
 npm --prefix visualizations/monolith run dev
 npm --prefix visualizations/matrix run dev
 npm --prefix visualizations/atom run dev
+npm --prefix visualizations/bocchi run dev
+npm --prefix visualizations/planes run dev
 ```
 
 ### Building
@@ -71,6 +81,8 @@ npm --prefix visualizations/monolith run build       # standalone Monolith
 npm --prefix visualizations/matrix run build         # standalone Matrix
 npm --prefix visualizations/matrix run lint          # Matrix TypeScript lint (run alongside build)
 npm --prefix visualizations/atom run build           # standalone Atom
+npm --prefix visualizations/bocchi run build         # standalone Bocchi
+npm --prefix visualizations/planes run build         # standalone Planes
 ```
 
 Run `npm run build` at the root whenever root code **or** any imported visualization source changes.
@@ -102,11 +114,13 @@ Matrix standalone (rain.s8njee.com):
 
 - Always check `git status` at the repo root before editing. If you touch a submodule, also check
   `git -C visualizations/<name> status`.
-- Monolith assets that must work in both the homepage and standalone Monolith need to exist in
-  both `public/...` and `visualizations/monolith/public/...`.
+- Assets that must work in both the homepage and a standalone submodule build need to exist in
+  both the root `public/...` and that submodule's `public/...` (e.g. `visualizations/monolith/public/...`,
+  and `visualizations/bocchi/public/bocchi.glb` + `public/bocchi.glb`).
 - Preserve the style of the package you touch:
   - root and Monolith: semicolons, more explicit imperative style
-  - Matrix and Atom: mostly no semicolons, looser hooks style
+  - Matrix: mostly no semicolons, looser hooks style
+  - atom2 and bocchi submodules: vanilla Three.js, semicolons (match the file you edit)
 - Make the smallest coherent diff that solves the problem. No formatting-only rewrites across
   package boundaries.
 - Do not hand-edit `dist/`. It is build output.
@@ -114,7 +128,7 @@ Matrix standalone (rain.s8njee.com):
 ## Common Traps
 
 - Assuming a submodule build proves the homepage still works
-- Adding a Monolith asset in only one `public/` tree
+- Adding a Monolith/Bocchi asset in only one `public/` tree
 - Running the standalone Monolith deploy and unintentionally replacing the homepage shell
 - Checking only root git status and missing dirty submodule work
 - Uploading `.DS_Store` files during deploy

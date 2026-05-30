@@ -1,9 +1,15 @@
-[submodule "visualizations/atom"]
-	path = visualizations/atom
-	url = git@github.com:s4njee/atom.git
 [submodule "visualizations/matrix"]
 	path = visualizations/matrix
 	url = git@github.com:s4njee/matrix-3js.git
 [submodule "visualizations/monolith"]
 	path = visualizations/monolith
 	url = git@github.com:s4njee/s8njee.git
+[submodule "visualizations/atom"]
+	path = visualizations/atom
+	url = git@github.com:s4njee/atom2.git
+[submodule "visualizations/bocchi"]
+	path = visualizations/bocchi
+	url = git@github.com:s4njee/bocchi.git
+[submodule "visualizations/planes"]
+	path = visualizations/planes
+	url = git@github.com:s4njee/3js-planes.git

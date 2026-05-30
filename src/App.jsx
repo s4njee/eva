@@ -3,6 +3,7 @@ import React, {
   lazy,
   startTransition,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import { Routes, Route } from 'react-router-dom';
@@ -11,17 +12,32 @@ import MonolithCanvas from '../visualizations/monolith/src/MonolithCanvas.jsx';
 import { isEditableTarget } from './shared/special-effects/index.ts';
 
 const MatrixCanvas = lazy(() => import('../visualizations/matrix/src/text-rain/App.tsx'));
-const AtomCanvas = lazy(() => import('../visualizations/atom/src/App.jsx'));
-const PlanesApp = lazy(() => import('./planes/App.jsx'));
+const AtomCanvas = lazy(() => import('./atom/AtomCanvas.jsx'));
+const BocchiCanvas = lazy(() => import('./bocchi/BocchiCanvas.jsx'));
+const PlanesApp = lazy(() => import('../visualizations/planes/src/App.jsx'));
 
 const SCENES = [
   { id: 'monolith', label: 'Monolith', Component: MonolithCanvas },
   { id: 'matrix', label: 'Matrix', Component: MatrixCanvas },
   { id: 'atom', label: 'Atom', Component: AtomCanvas },
+  { id: 'bocchi', label: 'Bocchi', Component: BocchiCanvas },
+  // Planes uses ArrowUp/ArrowDown to fly the plane, which would collide with the
+  // shell's keyboard scene switching. So it is reachable only by clicking its overlay
+  // tab: excluded from the arrow cycle, and the shell ignores arrows while it is active.
+  { id: 'planes', label: 'Planes', Component: PlanesApp, clickOnly: true },
 ];
 
-function getWrappedIndex(currentIndex, direction, total) {
-  return (currentIndex + direction + total) % total;
+// Scene indexes that participate in ArrowUp/ArrowDown cycling (all except clickOnly scenes).
+const ARROW_SCENE_INDEXES = SCENES.reduce((indexes, scene, index) => {
+  if (!scene.clickOnly) indexes.push(index);
+  return indexes;
+}, []);
+
+function getNextArrowSceneIndex(currentIndex, direction) {
+  const pos = ARROW_SCENE_INDEXES.indexOf(currentIndex);
+  const basePos = pos === -1 ? 0 : pos;
+  const nextPos = (basePos + direction + ARROW_SCENE_INDEXES.length) % ARROW_SCENE_INDEXES.length;
+  return ARROW_SCENE_INDEXES[nextPos];
 }
 
 function shouldShowQualitySwitcher() {
@@ -36,6 +52,11 @@ export default function App() {
   const [modelQuality, setModelQuality] = useState('auto');
   const showQualitySwitcher = shouldShowQualitySwitcher();
 
+  // Mirror the active scene into a ref so the window keydown handler (bound once)
+  // can read the current scene without re-binding.
+  const sceneIndexRef = useRef(sceneIndex);
+  sceneIndexRef.current = sceneIndex;
+
   const handleSceneSelect = (index) => {
     startTransition(() => {
       setSceneIndex(index);
@@ -48,12 +69,16 @@ export default function App() {
 
       if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
 
+      // Click-only scenes (Planes flies with Up/Down) own the arrow keys while active:
+      // don't switch scenes and don't preventDefault, so the scene's own handler runs.
+      if (SCENES[sceneIndexRef.current]?.clickOnly) return;
+
       event.preventDefault();
 
       const direction = event.key === 'ArrowDown' ? 1 : -1;
 
       startTransition(() => {
-        setSceneIndex((currentIndex) => getWrappedIndex(currentIndex, direction, SCENES.length));
+        setSceneIndex((currentIndex) => getNextArrowSceneIndex(currentIndex, direction));
       });
     };
 
@@ -101,7 +126,11 @@ function EvaApp({ sceneIndex, overlayOpen, setOverlayOpen, handleSceneSelect, ac
       <div className={`eva-overlay ${overlayOpen ? 'is-open' : ''}`}>
         <p className="eva-kicker">Eva</p>
         <h1 className="eva-title">{activeScene.label}</h1>
-        <p className="eva-hint">ArrowUp for previous, ArrowDown for next.</p>
+        <p className="eva-hint">
+          {activeScene.clickOnly
+            ? 'Pick a scene below. Arrow keys control this scene.'
+            : 'ArrowUp for previous, ArrowDown for next.'}
+        </p>
 
         <div className="eva-scene-tabs" role="tablist" aria-label="Scene switcher">
           {SCENES.map((scene, index) => (

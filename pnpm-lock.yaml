@@ -8,21 +8,39 @@ importers:
 
   .:
     dependencies:
+      3d-tiles-renderer:
+        specifier: ^0.4.15
+        version: 0.4.27(@mapbox/vector-tile@2.0.5)(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(pbf@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
       '@react-three/drei':
         specifier: ^10.7.7
-        version: 10.7.7(@react-three/fiber@9.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2)
+        version: 10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
       '@react-three/fiber':
-        specifier: ^9.5.0
-        version: 9.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2)
+        specifier: ^9.6.0
+        version: 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
       '@react-three/postprocessing':
         specifier: ^3.0.4
-        version: 3.0.4(@react-three/fiber@9.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2))(@types/three@0.183.1)(react@19.2.4)(three@0.183.2)
+        version: 3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0)
+      '@takram/three-atmosphere':
+        specifier: ^0.18.0
+        version: 0.18.0(@react-three/drei@10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/postprocessing@3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0))(postprocessing@6.39.0(three@0.184.0))(react@19.2.4)(three@0.184.0)
+      '@takram/three-clouds':
+        specifier: ^0.7.4
+        version: 0.7.6(@react-three/drei@10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/postprocessing@3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0))(postprocessing@6.39.0(three@0.184.0))(react@19.2.4)(three@0.184.0)
+      '@takram/three-geospatial':
+        specifier: ^0.8.0
+        version: 0.8.0(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(react@19.2.4)(three@0.184.0)
+      '@takram/three-geospatial-effects':
+        specifier: ^0.6.2
+        version: 0.6.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/postprocessing@3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0))(postprocessing@6.39.0(three@0.184.0))(react@19.2.4)(three@0.184.0)
       lil-gui:
         specifier: ^0.21.0
         version: 0.21.0
+      maplibre-gl:
+        specifier: ^5.23.0
+        version: 5.24.0
       postprocessing:
         specifier: ^6.36.6
-        version: 6.39.0(three@0.183.2)
+        version: 6.39.0(three@0.184.0)
       react:
         specifier: ^19.2.0
         version: 19.2.4
@@ -36,11 +54,11 @@ importers:
         specifier: ^0.27.0
         version: 0.27.0
       three:
-        specifier: ^0.183.2
-        version: 0.183.2
+        specifier: ^0.184.0
+        version: 0.184.0
       troika-three-text:
         specifier: ^0.52.4
-        version: 0.52.4(three@0.183.2)
+        version: 0.52.4(three@0.184.0)
     devDependencies:
       '@gltf-transform/extensions':
         specifier: ^4.3.0
@@ -62,6 +80,38 @@ importers:
         version: 4.83.0
 
 packages:
+
+  3d-tiles-renderer@0.4.27:
+    resolution: {integrity: sha512-6LjbyYvwyJSfHSuX4t3rvZh6LW67LNmXzIY83zrEPYQv1nra2UQ9rV/ibYlj7OAO1Fy49WYX7gp5RyaJNSzdAA==}
+    peerDependencies:
+      '@babylonjs/core': '>=8.0.0'
+      '@babylonjs/loaders': '>=8.0.0'
+      '@mapbox/vector-tile': ^2.0.3
+      '@react-three/fiber': ^8.17.9 || ^9.0.0
+      pbf: ^4.0.1
+      pmtiles: ^4.3.2
+      react: ^18.3.1 || ^19.0.0
+      react-dom: ^18.3.1 || ^19.0.0
+      three: '>=0.167.0'
+    peerDependenciesMeta:
+      '@babylonjs/core':
+        optional: true
+      '@babylonjs/loaders':
+        optional: true
+      '@mapbox/vector-tile':
+        optional: true
+      '@react-three/fiber':
+        optional: true
+      pbf:
+        optional: true
+      pmtiles:
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      three:
+        optional: true
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -704,6 +754,42 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
+  '@mapbox/jsonlint-lines-primitives@2.0.2':
+    resolution: {integrity: sha512-rY0o9A5ECsTQRVhv7tL/OyDpGAoUB4tTvLiW1DSzQGq4bvTPhNw1VpSNjDJc5GFZ2XuyOtSWSVN05qOtcD71qQ==}
+    engines: {node: '>= 0.6'}
+
+  '@mapbox/point-geometry@1.1.0':
+    resolution: {integrity: sha512-YGcBz1cg4ATXDCM/71L9xveh4dynfGmcLDqufR+nQQy3fKwsAZsWd/x4621/6uJaeB9mwOHE6hPeDgXz9uViUQ==}
+
+  '@mapbox/tiny-sdf@2.2.0':
+    resolution: {integrity: sha512-LVL4wgI9YAum5V+LNVQO6QgFBPw7/MIIY4XJPNsPDMrjEwcE+JfKk1LuIl8GnF197ejVdC9QdPaxrx5gfgdGXg==}
+
+  '@mapbox/unitbezier@0.0.1':
+    resolution: {integrity: sha512-nMkuDXFv60aBr9soUG5q+GvZYL+2KZHVvsqFCzqnkGEf46U2fvmytHaEVc1/YZbiLn8X+eR3QzX1+dwDO1lxlw==}
+
+  '@mapbox/vector-tile@2.0.5':
+    resolution: {integrity: sha512-pXj8m7KTsqZt+1jsE0xIpGvqTSbblfkuEJL/NJmNePMtEwxO8V3XMDo9WMSfDeqHvCtBI9Lmt4mGcGR10zecmw==}
+
+  '@mapbox/whoots-js@3.1.0':
+    resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
+    engines: {node: '>=6.0.0'}
+
+  '@maplibre/geojson-vt@5.0.4':
+    resolution: {integrity: sha512-KGg9sma45S+stfH9vPCJk1J0lSDLWZgCT9Y8u8qWZJyjFlP8MNP1WGTxIMYJZjDvVT3PDn05kN1C95Sut1HpgQ==}
+
+  '@maplibre/geojson-vt@6.1.0':
+    resolution: {integrity: sha512-2eIY4gZxeKIVOZVNkAMb+5NgXhgsMQpOveTQAvnp53LYqHGJZDidk7Ew0Tged9PThidpbS+NFTh0g4zivhPDzQ==}
+
+  '@maplibre/maplibre-gl-style-spec@24.8.5':
+    resolution: {integrity: sha512-EzEJmMt6thioRH7GI9LWS7ahXTcAhAPGWCe6oTP2Ps4YnsXOOAfeqx854lZaiDnwURfHmcCKV1mr6oo0i23x6w==}
+    hasBin: true
+
+  '@maplibre/mlt@1.1.11':
+    resolution: {integrity: sha512-dKvjKdITw9d0y3ndGkSqLUEpWCizMtdq8NB06cHohH/JZ2sJoM7dClR9wzJLUWykjbw9RXDFmhjjNBnNW27mzw==}
+
+  '@maplibre/vt-pbf@4.3.0':
+    resolution: {integrity: sha512-jIvp8F5hQCcreqOOpEt42TJMUlsrEcpf/kI1T2v85YrQRV6PPXUcEXUg5karKtH6oh47XJZ4kHu56pUkOuqA7w==}
+
   '@mediapipe/tasks-vision@0.10.17':
     resolution: {integrity: sha512-CZWV/q6TTe8ta61cZXjfnnHsfWIdFhms03M9T7Cnd5y2mdpylJM0rF1qRq+wsQVRMLz1OYPVEBU9ph2Bx8cxrg==}
 
@@ -711,6 +797,9 @@ packages:
     resolution: {integrity: sha512-2Z0FATFHaoYJ8b+Y4y4Hgfn3FRFwuU5zRrk+9dFWp4uGAdHGqVEdP7HP+gLA3X469KXHmfupJaUbKo1b/aDKIg==}
     peerDependencies:
       three: '>= 0.159.0'
+
+  '@petamoriken/float16@3.9.3':
+    resolution: {integrity: sha512-8awtpHXCx/bNpFt4mt2xdkgtgVvKqty8VbjHI/WWWQuEw+KLzFot3f4+LkQY9YmOtq7A5GdOnqoIC8Pdygjk2g==}
 
   '@poppinss/colors@4.1.6':
     resolution: {integrity: sha512-H9xkIdFswbS8n1d6vmRd8+c10t2Qe+rZITbbDHHkQixH5+2x1FDGmi/0K+WgWiqQFKPSlIYB7jlH6Kpfn6Fleg==}
@@ -762,8 +851,8 @@ packages:
       react-dom:
         optional: true
 
-  '@react-three/fiber@9.5.0':
-    resolution: {integrity: sha512-FiUzfYW4wB1+PpmsE47UM+mCads7j2+giRBltfwH7SNhah95rqJs3ltEs9V3pP8rYdS0QlNne+9Aj8dS/SiaIA==}
+  '@react-three/fiber@9.6.1':
+    resolution: {integrity: sha512-zF0rsKcVYpcJwbFEnv2HkHX9cvOEgsfQo/X8lwmR2dn13S4qEQJXir9fxf5js2LQFoXqxOY7MDkOkYx2uZ4gSg==}
     peerDependencies:
       expo: '>=43.0'
       expo-asset: '>=8.4'
@@ -946,6 +1035,93 @@ packages:
     resolution: {integrity: sha512-8qJ1WIBXaJu8HjnJAjYniE0kYcr0kCe5Hp7kDzYiGVvvd7zyrOBwbF5imoW5mvwx1Qba0hxGEK5R9jEoaHKJFA==}
     engines: {node: '>=16', pnpm: '>=8'}
 
+  '@takram/three-atmosphere@0.18.0':
+    resolution: {integrity: sha512-4OscPZY34wwFj4t5Z/j6UstCRyFUumsPbUW2zsXWKjw6NPZBnOM7tYCRsTFdH1D+1MAETcSh4cZqcdQ85gtc1g==}
+    peerDependencies:
+      '@react-three/drei': '>=10.0.2'
+      '@react-three/fiber': '>=9.0.4'
+      '@react-three/postprocessing': '>=3.0.4'
+      postprocessing: '>=6.36.7'
+      react: '>=19.0'
+      three: '>=0.170.0'
+    peerDependenciesMeta:
+      '@react-three/drei':
+        optional: true
+      '@react-three/fiber':
+        optional: true
+      '@react-three/postprocessing':
+        optional: true
+      react:
+        optional: true
+
+  '@takram/three-atmosphere@0.19.1':
+    resolution: {integrity: sha512-k/QAgED7bMkjVzHiBu2QD1Cqg5lcgHLc8vxVeiTTzUE+glZcZOXTjjvi74yjb+eKQHW5wh1WL/DjxVvluAQU0Q==}
+    peerDependencies:
+      '@react-three/drei': '>=10.0.2'
+      '@react-three/fiber': '>=9.0.4'
+      '@react-three/postprocessing': '>=3.0.4'
+      postprocessing: '>=6.36.7'
+      react: '>=19.0'
+      three: '>=0.170.0'
+    peerDependenciesMeta:
+      '@react-three/drei':
+        optional: true
+      '@react-three/fiber':
+        optional: true
+      '@react-three/postprocessing':
+        optional: true
+      react:
+        optional: true
+
+  '@takram/three-clouds@0.7.6':
+    resolution: {integrity: sha512-cfoEI3W5NJuYUL1Pd4k5UXLlb7rLThh3dNIOO+/EPw8cbuRUgiIVEVtNPmA+v5KRJf87gPI+rjuxgK0huAajDw==}
+    peerDependencies:
+      '@react-three/drei': '*'
+      '@react-three/fiber': '>=9.0.4'
+      '@react-three/postprocessing': '>=3.0.4'
+      postprocessing: '>=6.36.7'
+      react: '>=19.0'
+      three: '>=0.170.0'
+    peerDependenciesMeta:
+      '@react-three/drei':
+        optional: true
+      '@react-three/fiber':
+        optional: true
+      '@react-three/postprocessing':
+        optional: true
+      react:
+        optional: true
+
+  '@takram/three-geospatial-effects@0.6.4':
+    resolution: {integrity: sha512-Ufgap/N30j4Go5fyI9qdax9RiVK69OY+UuGCsYeuvGyihbfN5zh8ChHfu1c8vjIkz1Czz8zP8+6OvjD9+QxkMw==}
+    peerDependencies:
+      '@react-three/fiber': '>=9.0.4'
+      '@react-three/postprocessing': '>=3.0.4'
+      postprocessing: '>=6.36.4'
+      react: '>=19.0'
+      three: '>=0.170.0'
+    peerDependenciesMeta:
+      '@react-three/fiber':
+        optional: true
+      '@react-three/postprocessing':
+        optional: true
+      react:
+        optional: true
+
+  '@takram/three-geospatial@0.8.0':
+    resolution: {integrity: sha512-uR32RO/5qBfyqc+jnFXu04wRPOVa6+snRsMtGx9a4KLiyOQfbWBBoi1w+okvKC/9Cz8zqNgy5+RYQiO/3bIfbg==}
+    peerDependencies:
+      '@react-three/fiber': '>=9.0.4'
+      react: '>=19.0'
+      three: '>=0.170.0'
+
+  '@takram/three-geospatial@0.9.1':
+    resolution: {integrity: sha512-fB7DAW0afN87e0/CcgZYVkF76yI0SXaRcVuT7M6+5vLZ8ySfJ7br2ceni37GVyY7zO1sLMBtoaMCH1mal/Zf9Q==}
+    peerDependencies:
+      '@react-three/fiber': '>=9.0.4'
+      react: '>=19.0'
+      three: '>=0.170.0'
+
   '@tweenjs/tween.js@23.1.3':
     resolution: {integrity: sha512-vJmvvwFxYuGnF2axRtPYocag6Clbb5YS7kLL+SO/TeVFzHqDIWrNKYtcsPMibjDx9O+bu+psAy9NKfWklassUA==}
 
@@ -970,6 +1146,9 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  '@types/geojson@7946.0.16':
+    resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
+
   '@types/node@25.6.0':
     resolution: {integrity: sha512-+qIYRKdNYJwY3vRCZMdJbPLJAtGjQBudzZzdzwQYkEPQd+PJGixUL5QfvCLDaULoLv+RhT3LDkwEfKaAkgSmNQ==}
 
@@ -986,6 +1165,9 @@ packages:
 
   '@types/stats.js@0.17.4':
     resolution: {integrity: sha512-jIBvWWShCvlBqBNIZt0KAshWpvSjhkwkEu4ZUcASoAvhmrgAUI2t1dXrjSL4xXVLB4FznPrIsX3nKXFl/Dt4vA==}
+
+  '@types/supercluster@7.1.3':
+    resolution: {integrity: sha512-Z0pOY34GDFl3Q6hUFYf3HkTwKEE02e7QgtJppBt+beEAxnyOpJua+voGFvxINBHa06GwLFFym7gRPY2SiKIfIA==}
 
   '@types/three@0.183.1':
     resolution: {integrity: sha512-f2Pu5Hrepfgavttdye3PsH5RWyY/AvdZQwIVhrc4uNtvF7nOWJacQKcoVJn0S4f0yYbmAE6AR+ve7xDcuYtMGw==}
@@ -1024,6 +1206,9 @@ packages:
   ansi-styles@4.3.0:
     resolution: {integrity: sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==}
     engines: {node: '>=8'}
+
+  astronomy-engine@2.1.19:
+    resolution: {integrity: sha512-8yWKNf7UeNbH458h3sAJ6ZgAjE5jTXp/mNNRFoC20j2SHwZIjAQeEsBB2Q3uCFRaTCCJRv33K2XhkhZQMXoX6w==}
 
   autolinker@4.1.5:
     resolution: {integrity: sha512-vEfYZPmvVOIuE567XBVCsx8SBgOYtjB2+S1iAaJ+HgH+DNjAcrHem2hmAeC9yaNGWayicv4yR+9UaJlkF3pvtw==}
@@ -1188,6 +1373,9 @@ packages:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
 
+  gl-matrix@3.4.4:
+    resolution: {integrity: sha512-latSnyDNt/8zYUB6VIJ6PCh2jBjJX6gnDsoCZ7LyW7GkqrD51EWwa9qCoGixj8YqBtETQK/xY7OmpTF8xz1DdQ==}
+
   glsl-noise@0.0.0:
     resolution: {integrity: sha512-b/ZCF6amfAUb7dJM/MxRs7AetQEahYzJ8PtgfrmEdtw6uyGOr+ZSGtgjFm6mfsBkxJ4d2W7kg+Nlqzqvn3Bc0w==}
 
@@ -1238,6 +1426,9 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  json-stringify-pretty-compact@4.0.0:
+    resolution: {integrity: sha512-3CNZ2DnrpByG9Nqj6Xo8vqbjT4F6N+tb4Gb28ESAZjYZ5yqvmc56J+/kuIwkaAMOyblTQhUW7PxMkUb8Q36N3Q==}
+
   json5@2.2.3:
     resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
     engines: {node: '>=6'}
@@ -1283,6 +1474,10 @@ packages:
       '@types/three': '>=0.144.0'
       three: '>=0.144.0'
 
+  maplibre-gl@5.24.0:
+    resolution: {integrity: sha512-ALyFxgtd5R+65UqZ/++lOqwWcC0SNho9c27fYSyLmG7AfnAul2o46F05aDJGPbFU57wos9dgcIySHs0Xe6ia3A==}
+    engines: {node: '>=16.14.0', npm: '>=8.1.0'}
+
   mersenne-twister@1.1.0:
     resolution: {integrity: sha512-mUYWsMKNrm4lfygPkL3OfGzOPTR2DBlTkBNHM//F6hGp8cLThY897crAlk3/Jo17LEOOjQUrNAx6DvgO77QJkA==}
 
@@ -1304,8 +1499,14 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
+  minimist@1.2.8:
+    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
+
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
+
+  murmurhash-js@1.0.0:
+    resolution: {integrity: sha512-TvmkNhkv8yct0SVBSy+o8wYzXjE4Zz3PCesbfs8HiCXXdcTuocApFv11UWlNFWKYsP2okqrhb7JNlSm9InBhIw==}
 
   n8ao@1.10.1:
     resolution: {integrity: sha512-hhI1pC+BfOZBV1KMwynBrVlIm8wqLxj/abAWhF2nZ0qQKyzTSQa1QtLVS2veRiuoBQXojxobcnp0oe+PUoxf/w==}
@@ -1341,6 +1542,10 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
+  pbf@4.0.2:
+    resolution: {integrity: sha512-J0ajxARhZfpUEebxYs1vhMGMuLSXtBe1e+fFPDrf2uA2hgo+UshKfNUWOz92HJNz6/NFEXseQPddnHkTreWRqg==}
+    hasBin: true
+
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -1370,6 +1575,9 @@ packages:
   potpack@1.0.2:
     resolution: {integrity: sha512-choctRBIV9EMT9WGAZHn3V7t0Z2pMQyl0EZE6pFc/6ml3ssw7Dlf/oAOvFwjm1HVsqfQN8GfeFyJ+d8tRzqueQ==}
 
+  potpack@2.1.0:
+    resolution: {integrity: sha512-pcaShQc1Shq0y+E7GqJqvZj8DTthWV1KeHGdi0Z6IAin2Oi3JnLCOfwnCo84qc+HAp52wT9nK9H7FAJp5a44GQ==}
+
   promise-worker-transferable@1.0.4:
     resolution: {integrity: sha512-bN+0ehEnrXfxV2ZQvU2PetO0n4gqBD4ulq3MI1WOPLgr7/Mg9yRQkX5+0v1vagr74ZTsl7XtzlaYDo2EuCeYJw==}
 
@@ -1379,6 +1587,9 @@ packages:
   protobufjs@8.0.1:
     resolution: {integrity: sha512-NWWCCscLjs+cOKF/s/XVNFRW7Yih0fdH+9brffR5NZCy8k42yRdl5KlWKMVXuI1vfCoy4o1z80XR/W/QUb3V3w==}
     engines: {node: '>=12.0.0'}
+
+  protocol-buffers-schema@3.6.1:
+    resolution: {integrity: sha512-VG2K63Igkiv9p76tk1lilczEK1cT+kCjKtkdhw1dQZV3k3IXJbd3o6Ho8b9zJZaHSnT2hKe4I+ObmX9w6m5SmQ==}
 
   quickselect@3.0.0:
     resolution: {integrity: sha512-XdjUArbK4Bm5fLLvlm5KpTFOiOThgfWWI4axAZDWg4E/0mKdZyI9tNEfds27qCi1ze/vwTR16kvmmGhRra3c2g==}
@@ -1390,6 +1601,14 @@ packages:
     resolution: {integrity: sha512-AXJdLo8kgMbimY95O2aKQqsz2iWi9jMgKJhRBAxECE4IFxfcazB2LmzloIoibJI3C12IlY20+KFaLv+71bUJeQ==}
     peerDependencies:
       react: ^19.2.4
+
+  react-merge-refs@3.0.2:
+    resolution: {integrity: sha512-MSZAfwFfdbEvwkKWP5EI5chuLYnNUxNS7vyS0i1Jp+wtd8J4Ga2ddzhaE68aMol2Z4vCnRM/oGOo1a3V75UPlw==}
+    peerDependencies:
+      react: '>=16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0'
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   react-refresh@0.18.0:
     resolution: {integrity: sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw==}
@@ -1432,6 +1651,9 @@ packages:
   require-from-string@2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
     engines: {node: '>=0.10.0'}
+
+  resolve-protobuf-schema@2.1.0:
+    resolution: {integrity: sha512-kI5ffTiZWmJaS/huM8wZfEMer1eRd7oJQhDuxeCLe3t7N7mX3z94CN0xPxBQxFYQTSNz9T0i+v6inKqSdK8xrQ==}
 
   rollup@4.60.1:
     resolution: {integrity: sha512-VmtB2rFU/GroZ4oL8+ZqXgSA38O6GR8KSIvWmEFv63pQ0G6KaBH9s07PO8XTXP4vI+3UJUEypOfjkGfmSBBR0w==}
@@ -1486,6 +1708,9 @@ packages:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
 
+  supercluster@8.0.1:
+    resolution: {integrity: sha512-IiOea5kJ9iqzD2t7QJq/cREyLHTtSmUT6gQsweojg9WH2sYJqZK9SswTu6jrscO6D1G5v5vYZ9ru/eq85lXeZQ==}
+
   supports-color@10.2.2:
     resolution: {integrity: sha512-SS+jx45GF1QjgEXQx4NJZV9ImqmO2NPz5FNsIHrsDjh2YsHnawpan7SNQ1o8NuhrbHZy9AZhIoCUiCeaW/C80g==}
     engines: {node: '>=18'}
@@ -1494,6 +1719,10 @@ packages:
     resolution: {integrity: sha512-aqldKgX9aZqpoDp3e8/BZ8Dm7x1pJl+qI3ZKxDN0i/IQTWUwBx/ManmlVJ3wowqbno6c2bmiIfs+Um6LbsjJyQ==}
     peerDependencies:
       react: '>=17.0'
+
+  tagged-tag@1.0.0:
+    resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
+    engines: {node: '>=20'}
 
   three-mesh-bvh@0.8.3:
     resolution: {integrity: sha512-4G5lBaF+g2auKX3P0yqx+MJC6oVt6sB5k+CchS6Ob0qvH0YIhuUk1eYr7ktsIpY+albCqE80/FVQGV190PmiAg==}
@@ -1505,12 +1734,18 @@ packages:
     peerDependencies:
       three: '>=0.128.0'
 
-  three@0.183.2:
-    resolution: {integrity: sha512-di3BsL2FEQ1PA7Hcvn4fyJOlxRRgFYBpMTcyOgkwJIaDOdJMebEFPA+t98EvjuljDx4hNulAGwF6KIjtwI5jgQ==}
+  three@0.184.0:
+    resolution: {integrity: sha512-wtTRjG92pM5eUg/KuUnHsqSAlPM296brTOcLgMRqEeylYTh/CdtvKUvCyyCQTzFuStieWxvZb8mVTMvdPyUpxg==}
+
+  tiny-invariant@1.3.3:
+    resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
 
   tinyglobby@0.2.15:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
     engines: {node: '>=12.0.0'}
+
+  tinyqueue@3.0.0:
+    resolution: {integrity: sha512-gRa9gwYU3ECmQYv3lslts5hxuIa90veaEcxDYuu3QGOIAEM2mOZkVHp48ANJuu1CURtRdHKUBY5Lm1tHV+sD4g==}
 
   topojson-client@3.1.0:
     resolution: {integrity: sha512-605uxS6bcYxGXw9qi62XyrV6Q3xwbndjachmNxu8HWTtVPxZfEJN9fd/SZS1Q54Sn2y0TMyMxFj/cJINqGHrKw==}
@@ -1535,6 +1770,10 @@ packages:
   tunnel-rat@0.1.2:
     resolution: {integrity: sha512-lR5VHmkPhzdhrM092lI2nACsLO4QubF0/yoOhzX7c+wIpbN1GjHNzCc91QlpxBi+cnx8vVJ+Ur6vL5cEoQPFpQ==}
 
+  type-fest@5.6.0:
+    resolution: {integrity: sha512-8ZiHFm91orbSAe2PSAiSVBVko18pbhbiB3U9GglSzF/zCGkR+rxpHx6sEMCUm4kxY4LjDIUGgCfUMtwfZfjfUA==}
+    engines: {node: '>=20'}
+
   undici-types@7.19.2:
     resolution: {integrity: sha512-qYVnV5OEm2AW8cJMCpdV20CDyaN3g0AjDlOGf1OW4iaDEx8MwdtChUp4zu4H0VP3nDRF/8RKWH+IPp9uW0YGZg==}
 
@@ -1557,6 +1796,10 @@ packages:
 
   urijs@1.19.11:
     resolution: {integrity: sha512-HXgFDgDommxn5/bIv0cnQZsPhHDA90NPHD6+c/v21U5+Sx5hoP8+dP9IZXBU1gIfvdRfhG8cel9QNPeionfcCQ==}
+
+  url-join@5.0.0:
+    resolution: {integrity: sha512-n2huDr9h9yzd6exQVnH/jU5mr+Pfx08LRXXZhkLLetAMESRj+anQsTAh940iMrIetKAmry9coFuZQ2jY8/p3WA==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   use-sync-external-store@1.6.0:
     resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
@@ -1704,6 +1947,15 @@ packages:
         optional: true
 
 snapshots:
+
+  3d-tiles-renderer@0.4.27(@mapbox/vector-tile@2.0.5)(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(pbf@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0):
+    optionalDependencies:
+      '@mapbox/vector-tile': 2.0.5
+      '@react-three/fiber': 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      pbf: 4.0.2
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+      three: 0.184.0
 
   '@babel/code-frame@7.29.0':
     dependencies:
@@ -2169,12 +2421,59 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  '@mapbox/jsonlint-lines-primitives@2.0.2': {}
+
+  '@mapbox/point-geometry@1.1.0': {}
+
+  '@mapbox/tiny-sdf@2.2.0': {}
+
+  '@mapbox/unitbezier@0.0.1': {}
+
+  '@mapbox/vector-tile@2.0.5':
+    dependencies:
+      '@mapbox/point-geometry': 1.1.0
+      '@types/geojson': 7946.0.16
+      pbf: 4.0.2
+
+  '@mapbox/whoots-js@3.1.0': {}
+
+  '@maplibre/geojson-vt@5.0.4': {}
+
+  '@maplibre/geojson-vt@6.1.0':
+    dependencies:
+      kdbush: 4.0.2
+
+  '@maplibre/maplibre-gl-style-spec@24.8.5':
+    dependencies:
+      '@mapbox/jsonlint-lines-primitives': 2.0.2
+      '@mapbox/unitbezier': 0.0.1
+      json-stringify-pretty-compact: 4.0.0
+      minimist: 1.2.8
+      quickselect: 3.0.0
+      tinyqueue: 3.0.0
+
+  '@maplibre/mlt@1.1.11':
+    dependencies:
+      '@mapbox/point-geometry': 1.1.0
+
+  '@maplibre/vt-pbf@4.3.0':
+    dependencies:
+      '@mapbox/point-geometry': 1.1.0
+      '@mapbox/vector-tile': 2.0.5
+      '@maplibre/geojson-vt': 5.0.4
+      '@types/geojson': 7946.0.16
+      '@types/supercluster': 7.1.3
+      pbf: 4.0.2
+      supercluster: 8.0.1
+
   '@mediapipe/tasks-vision@0.10.17': {}
 
-  '@monogrid/gainmap-js@3.4.0(three@0.183.2)':
+  '@monogrid/gainmap-js@3.4.0(three@0.184.0)':
     dependencies:
       promise-worker-transferable: 1.0.4
-      three: 0.183.2
+      three: 0.184.0
+
+  '@petamoriken/float16@3.9.3': {}
 
   '@poppinss/colors@4.1.6':
     dependencies:
@@ -2211,28 +2510,28 @@ snapshots:
 
   '@protobufjs/utf8@1.1.0': {}
 
-  '@react-three/drei@10.7.7(@react-three/fiber@9.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2)':
+  '@react-three/drei@10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)':
     dependencies:
       '@babel/runtime': 7.29.2
       '@mediapipe/tasks-vision': 0.10.17
-      '@monogrid/gainmap-js': 3.4.0(three@0.183.2)
-      '@react-three/fiber': 9.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2)
+      '@monogrid/gainmap-js': 3.4.0(three@0.184.0)
+      '@react-three/fiber': 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
       '@use-gesture/react': 10.3.1(react@19.2.4)
-      camera-controls: 3.1.2(three@0.183.2)
+      camera-controls: 3.1.2(three@0.184.0)
       cross-env: 7.0.3
       detect-gpu: 5.0.70
       glsl-noise: 0.0.0
       hls.js: 1.6.15
-      maath: 0.10.8(@types/three@0.183.1)(three@0.183.2)
-      meshline: 3.3.1(three@0.183.2)
+      maath: 0.10.8(@types/three@0.183.1)(three@0.184.0)
+      meshline: 3.3.1(three@0.184.0)
       react: 19.2.4
-      stats-gl: 2.4.2(@types/three@0.183.1)(three@0.183.2)
+      stats-gl: 2.4.2(@types/three@0.183.1)(three@0.184.0)
       stats.js: 0.17.0
       suspend-react: 0.1.3(react@19.2.4)
-      three: 0.183.2
-      three-mesh-bvh: 0.8.3(three@0.183.2)
-      three-stdlib: 2.36.1(three@0.183.2)
-      troika-three-text: 0.52.4(three@0.183.2)
+      three: 0.184.0
+      three-mesh-bvh: 0.8.3(three@0.184.0)
+      three-stdlib: 2.36.1(three@0.184.0)
+      troika-three-text: 0.52.4(three@0.184.0)
       tunnel-rat: 0.1.2(@types/react@19.2.14)(react@19.2.4)
       use-sync-external-store: 1.6.0(react@19.2.4)
       utility-types: 3.11.0
@@ -2244,7 +2543,7 @@ snapshots:
       - '@types/three'
       - immer
 
-  '@react-three/fiber@9.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2)':
+  '@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)':
     dependencies:
       '@babel/runtime': 7.29.2
       '@types/webxr': 0.5.24
@@ -2255,7 +2554,7 @@ snapshots:
       react-use-measure: 2.1.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       scheduler: 0.27.0
       suspend-react: 0.1.3(react@19.2.4)
-      three: 0.183.2
+      three: 0.184.0
       use-sync-external-store: 1.6.0(react@19.2.4)
       zustand: 5.0.12(@types/react@19.2.14)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
     optionalDependencies:
@@ -2264,14 +2563,14 @@ snapshots:
       - '@types/react'
       - immer
 
-  '@react-three/postprocessing@3.0.4(@react-three/fiber@9.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2))(@types/three@0.183.1)(react@19.2.4)(three@0.183.2)':
+  '@react-three/postprocessing@3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0)':
     dependencies:
-      '@react-three/fiber': 9.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2)
-      maath: 0.6.0(@types/three@0.183.1)(three@0.183.2)
-      n8ao: 1.10.1(postprocessing@6.39.0(three@0.183.2))(three@0.183.2)
-      postprocessing: 6.39.0(three@0.183.2)
+      '@react-three/fiber': 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      maath: 0.6.0(@types/three@0.183.1)(three@0.184.0)
+      n8ao: 1.10.1(postprocessing@6.39.0(three@0.184.0))(three@0.184.0)
+      postprocessing: 6.39.0(three@0.184.0)
       react: 19.2.4
-      three: 0.183.2
+      three: 0.184.0
     transitivePeerDependencies:
       - '@types/three'
 
@@ -2358,6 +2657,78 @@ snapshots:
 
   '@spz-loader/core@0.3.1': {}
 
+  '@takram/three-atmosphere@0.18.0(@react-three/drei@10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/postprocessing@3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0))(postprocessing@6.39.0(three@0.184.0))(react@19.2.4)(three@0.184.0)':
+    dependencies:
+      '@takram/three-geospatial': 0.8.0(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(react@19.2.4)(three@0.184.0)
+      astronomy-engine: 2.1.19
+      postprocessing: 6.39.0(three@0.184.0)
+      react-merge-refs: 3.0.2(react@19.2.4)
+      three: 0.184.0
+      tiny-invariant: 1.3.3
+      url-join: 5.0.0
+    optionalDependencies:
+      '@react-three/drei': 10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      '@react-three/fiber': 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      '@react-three/postprocessing': 3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0)
+      react: 19.2.4
+
+  '@takram/three-atmosphere@0.19.1(@react-three/drei@10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/postprocessing@3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0))(postprocessing@6.39.0(three@0.184.0))(react@19.2.4)(three@0.184.0)':
+    dependencies:
+      '@takram/three-geospatial': 0.9.1(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(react@19.2.4)(three@0.184.0)
+      astronomy-engine: 2.1.19
+      postprocessing: 6.39.0(three@0.184.0)
+      react-merge-refs: 3.0.2(react@19.2.4)
+      three: 0.184.0
+      tiny-invariant: 1.3.3
+      url-join: 5.0.0
+    optionalDependencies:
+      '@react-three/drei': 10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      '@react-three/fiber': 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      '@react-three/postprocessing': 3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0)
+      react: 19.2.4
+
+  '@takram/three-clouds@0.7.6(@react-three/drei@10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/postprocessing@3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0))(postprocessing@6.39.0(three@0.184.0))(react@19.2.4)(three@0.184.0)':
+    dependencies:
+      '@takram/three-atmosphere': 0.19.1(@react-three/drei@10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/postprocessing@3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0))(postprocessing@6.39.0(three@0.184.0))(react@19.2.4)(three@0.184.0)
+      '@takram/three-geospatial': 0.9.1(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(react@19.2.4)(three@0.184.0)
+      postprocessing: 6.39.0(three@0.184.0)
+      three: 0.184.0
+      tiny-invariant: 1.3.3
+      type-fest: 5.6.0
+    optionalDependencies:
+      '@react-three/drei': 10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      '@react-three/fiber': 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      '@react-three/postprocessing': 3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0)
+      react: 19.2.4
+
+  '@takram/three-geospatial-effects@0.6.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@react-three/postprocessing@3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0))(postprocessing@6.39.0(three@0.184.0))(react@19.2.4)(three@0.184.0)':
+    dependencies:
+      '@takram/three-geospatial': 0.9.1(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(react@19.2.4)(three@0.184.0)
+      postprocessing: 6.39.0(three@0.184.0)
+      three: 0.184.0
+    optionalDependencies:
+      '@react-three/fiber': 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      '@react-three/postprocessing': 3.0.4(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(@types/three@0.183.1)(react@19.2.4)(three@0.184.0)
+      react: 19.2.4
+
+  '@takram/three-geospatial@0.8.0(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(react@19.2.4)(three@0.184.0)':
+    dependencies:
+      '@petamoriken/float16': 3.9.3
+      '@react-three/fiber': 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      react: 19.2.4
+      three: 0.184.0
+      tiny-invariant: 1.3.3
+      type-fest: 5.6.0
+
+  '@takram/three-geospatial@0.9.1(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0))(react@19.2.4)(three@0.184.0)':
+    dependencies:
+      '@petamoriken/float16': 3.9.3
+      '@react-three/fiber': 9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.184.0)
+      react: 19.2.4
+      three: 0.184.0
+      tiny-invariant: 1.3.3
+      type-fest: 5.6.0
+
   '@tweenjs/tween.js@23.1.3': {}
 
   '@tweenjs/tween.js@25.0.0': {}
@@ -2387,6 +2758,8 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
+  '@types/geojson@7946.0.16': {}
+
   '@types/node@25.6.0':
     dependencies:
       undici-types: 7.19.2
@@ -2402,6 +2775,10 @@ snapshots:
       csstype: 3.2.3
 
   '@types/stats.js@0.17.4': {}
+
+  '@types/supercluster@7.1.3':
+    dependencies:
+      '@types/geojson': 7946.0.16
 
   '@types/three@0.183.1':
     dependencies:
@@ -2447,6 +2824,8 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
 
+  astronomy-engine@2.1.19: {}
+
   autolinker@4.1.5:
     dependencies:
       tslib: 2.8.1
@@ -2478,9 +2857,9 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  camera-controls@3.1.2(three@0.183.2):
+  camera-controls@3.1.2(three@0.184.0):
     dependencies:
-      three: 0.183.2
+      three: 0.184.0
 
   caniuse-lite@1.0.30001784: {}
 
@@ -2627,6 +3006,8 @@ snapshots:
 
   get-caller-file@2.0.5: {}
 
+  gl-matrix@3.4.4: {}
+
   glsl-noise@0.0.0: {}
 
   gltf-pipeline@4.3.1:
@@ -2668,6 +3049,8 @@ snapshots:
 
   jsesc@3.1.0: {}
 
+  json-stringify-pretty-compact@4.0.0: {}
+
   json5@2.2.3: {}
 
   jsonfile@6.2.0:
@@ -2696,21 +3079,43 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  maath@0.10.8(@types/three@0.183.1)(three@0.183.2):
+  maath@0.10.8(@types/three@0.183.1)(three@0.184.0):
     dependencies:
       '@types/three': 0.183.1
-      three: 0.183.2
+      three: 0.184.0
 
-  maath@0.6.0(@types/three@0.183.1)(three@0.183.2):
+  maath@0.6.0(@types/three@0.183.1)(three@0.184.0):
     dependencies:
       '@types/three': 0.183.1
-      three: 0.183.2
+      three: 0.184.0
+
+  maplibre-gl@5.24.0:
+    dependencies:
+      '@mapbox/jsonlint-lines-primitives': 2.0.2
+      '@mapbox/point-geometry': 1.1.0
+      '@mapbox/tiny-sdf': 2.2.0
+      '@mapbox/unitbezier': 0.0.1
+      '@mapbox/vector-tile': 2.0.5
+      '@mapbox/whoots-js': 3.1.0
+      '@maplibre/geojson-vt': 6.1.0
+      '@maplibre/maplibre-gl-style-spec': 24.8.5
+      '@maplibre/mlt': 1.1.11
+      '@maplibre/vt-pbf': 4.3.0
+      '@types/geojson': 7946.0.16
+      earcut: 3.0.2
+      gl-matrix: 3.4.4
+      kdbush: 4.0.2
+      murmurhash-js: 1.0.0
+      pbf: 4.0.2
+      potpack: 2.1.0
+      quickselect: 3.0.0
+      tinyqueue: 3.0.0
 
   mersenne-twister@1.1.0: {}
 
-  meshline@3.3.1(three@0.183.2):
+  meshline@3.3.1(three@0.184.0):
     dependencies:
-      three: 0.183.2
+      three: 0.184.0
 
   meshoptimizer@1.0.1: {}
 
@@ -2728,12 +3133,16 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  minimist@1.2.8: {}
+
   ms@2.1.3: {}
 
-  n8ao@1.10.1(postprocessing@6.39.0(three@0.183.2))(three@0.183.2):
+  murmurhash-js@1.0.0: {}
+
+  n8ao@1.10.1(postprocessing@6.39.0(three@0.184.0))(three@0.184.0):
     dependencies:
-      postprocessing: 6.39.0(three@0.183.2)
-      three: 0.183.2
+      postprocessing: 6.39.0(three@0.184.0)
+      three: 0.184.0
 
   nanoid@3.3.11: {}
 
@@ -2750,6 +3159,10 @@ snapshots:
   path-to-regexp@6.3.0: {}
 
   pathe@2.0.3: {}
+
+  pbf@4.0.2:
+    dependencies:
+      resolve-protobuf-schema: 2.1.0
 
   picocolors@1.1.1: {}
 
@@ -2769,11 +3182,13 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  postprocessing@6.39.0(three@0.183.2):
+  postprocessing@6.39.0(three@0.184.0):
     dependencies:
-      three: 0.183.2
+      three: 0.184.0
 
   potpack@1.0.2: {}
+
+  potpack@2.1.0: {}
 
   promise-worker-transferable@1.0.4:
     dependencies:
@@ -2797,6 +3212,8 @@ snapshots:
       '@types/node': 25.6.0
       long: 5.3.2
 
+  protocol-buffers-schema@3.6.1: {}
+
   quickselect@3.0.0: {}
 
   rbush@4.0.1:
@@ -2807,6 +3224,10 @@ snapshots:
     dependencies:
       react: 19.2.4
       scheduler: 0.27.0
+
+  react-merge-refs@3.0.2(react@19.2.4):
+    optionalDependencies:
+      react: 19.2.4
 
   react-refresh@0.18.0: {}
 
@@ -2835,6 +3256,10 @@ snapshots:
   require-directory@2.1.1: {}
 
   require-from-string@2.0.2: {}
+
+  resolve-protobuf-schema@2.1.0:
+    dependencies:
+      protocol-buffers-schema: 3.6.1
 
   rollup@4.60.1:
     dependencies:
@@ -2914,10 +3339,10 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  stats-gl@2.4.2(@types/three@0.183.1)(three@0.183.2):
+  stats-gl@2.4.2(@types/three@0.183.1)(three@0.184.0):
     dependencies:
       '@types/three': 0.183.1
-      three: 0.183.2
+      three: 0.184.0
 
   stats.js@0.17.0: {}
 
@@ -2931,17 +3356,23 @@ snapshots:
     dependencies:
       ansi-regex: 5.0.1
 
+  supercluster@8.0.1:
+    dependencies:
+      kdbush: 4.0.2
+
   supports-color@10.2.2: {}
 
   suspend-react@0.1.3(react@19.2.4):
     dependencies:
       react: 19.2.4
 
-  three-mesh-bvh@0.8.3(three@0.183.2):
-    dependencies:
-      three: 0.183.2
+  tagged-tag@1.0.0: {}
 
-  three-stdlib@2.36.1(three@0.183.2):
+  three-mesh-bvh@0.8.3(three@0.184.0):
+    dependencies:
+      three: 0.184.0
+
+  three-stdlib@2.36.1(three@0.184.0):
     dependencies:
       '@types/draco3d': 1.4.10
       '@types/offscreencanvas': 2019.7.3
@@ -2949,30 +3380,34 @@ snapshots:
       draco3d: 1.5.7
       fflate: 0.6.10
       potpack: 1.0.2
-      three: 0.183.2
+      three: 0.184.0
 
-  three@0.183.2: {}
+  three@0.184.0: {}
+
+  tiny-invariant@1.3.3: {}
 
   tinyglobby@0.2.15:
     dependencies:
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
 
+  tinyqueue@3.0.0: {}
+
   topojson-client@3.1.0:
     dependencies:
       commander: 2.20.3
 
-  troika-three-text@0.52.4(three@0.183.2):
+  troika-three-text@0.52.4(three@0.184.0):
     dependencies:
       bidi-js: 1.0.3
-      three: 0.183.2
-      troika-three-utils: 0.52.4(three@0.183.2)
+      three: 0.184.0
+      troika-three-utils: 0.52.4(three@0.184.0)
       troika-worker-utils: 0.52.0
       webgl-sdf-generator: 1.1.1
 
-  troika-three-utils@0.52.4(three@0.183.2):
+  troika-three-utils@0.52.4(three@0.184.0):
     dependencies:
-      three: 0.183.2
+      three: 0.184.0
 
   troika-worker-utils@0.52.0: {}
 
@@ -2985,6 +3420,10 @@ snapshots:
       - '@types/react'
       - immer
       - react
+
+  type-fest@5.6.0:
+    dependencies:
+      tagged-tag: 1.0.0
 
   undici-types@7.19.2: {}
 
@@ -3003,6 +3442,8 @@ snapshots:
       picocolors: 1.1.1
 
   urijs@1.19.11: {}
+
+  url-join@5.0.0: {}
 
   use-sync-external-store@1.6.0(react@19.2.4):
     dependencies:
