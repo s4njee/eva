@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "protobufjs", "sharp", "workerd"]
+  },
   "scripts": {
     "install:submodules": "npm --prefix visualizations/monolith install && npm --prefix visualizations/matrix install && npm --prefix visualizations/atom install && npm --prefix visualizations/bocchi install && npm --prefix visualizations/planes install",
     "install:all": "npm install && npm run install:submodules",
