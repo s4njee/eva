@@ -236,14 +236,14 @@ canvas {
 
 @media (max-width: 640px) {
   .eva-overlay {
-    bottom: 66px;
+    bottom: calc(66px + env(safe-area-inset-bottom, 0px));
     left: 12px;
     max-width: calc(100vw - 24px);
     padding: 12px 14px;
   }
 
   .eva-overlay-toggle {
-    bottom: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     left: 12px;
   }
 }

@@ -61,7 +61,7 @@ const DEFAULT_FRAME_RATE_SNAPSHOT: FrameRateSnapshot = Object.freeze({
 const FRAME_RATE_HUD_STYLE = {
   position: 'absolute',
   right: '16px',
-  bottom: '16px',
+  bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
   zIndex: 30,
   pointerEvents: 'none',
   display: 'flex',
